@@ -3,7 +3,7 @@
 
 The fixture is a progress log THIS suite writes into tempfile.mkdtemp(), built from lines
 copied verbatim out of the manager queue's real progress log (START BATCH / END BATCH /
-SPLIT BATCH -- the format manager_queue.sh appends). Real format, owned data: a new line in
+SPLIT BATCH -- the format scoping_queue.sh appends). Real format, owned data: a new line in
 the live log cannot turn this suite red on main. Stamps carry no date, so a batch that
 straddles midnight has no measurable duration: report it as crossed_midnight, never clamp it
 to 0.0 (a 0.0 row is a plausible record with the answer removed).

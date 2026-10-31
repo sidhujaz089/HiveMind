@@ -3,7 +3,7 @@
 
     python3 scripts/bridge_trigger.py <answer.md> --task tNNN --model <manager tag> [--repo R]
 
-scripts/manager_queue.sh runs this after manager_note.py, for every answer. It is the step
+scripts/scoping_queue.sh runs this after manager_note.py, for every answer. It is the step
 between Q4 scoping a task and Gemma building it that Claude used to do by hand.
 
   no ```chunks block        -> exit 0, nothing written (a prose answer is not an error)

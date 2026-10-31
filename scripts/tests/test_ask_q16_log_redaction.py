@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """t3777 -- the manager-queue log writer redacts what it writes.
 
-WHY THIS SUITE EXISTS (measured 2026-10-29). `scripts/manager_queue.sh:75` runs
+WHY THIS SUITE EXISTS (measured 2026-10-29). `scripts/scoping_queue.sh:75` runs
 
     python3 scripts/ask_q16.py --prompt ... --out ... --task "$t" ... > "$Q/out/$t.log" 2>&1
 
@@ -69,7 +69,7 @@ def _run(name, fn):
 def test_1_the_writer_exposes_the_helper():
     fn = getattr(ask_q16, "redact_log_line", None)
     assert callable(fn), ("ask_q16 has no callable redact_log_line, so the writer that produces "
-                          "the manager-queue out/*.log (manager_queue.sh:75) writes its rows "
+                          "the manager-queue out/*.log (scoping_queue.sh:75) writes its rows "
                           "unredacted and the session-end commit is refused by the secret scan")
 
 
@@ -124,7 +124,7 @@ def test_6_a_clean_line_writes_no_raw():
 
 
 def test_7_the_log_stream_itself_is_redacted():
-    """THE VALUE IS USED. ask_q16's stdout IS out/*.log (manager_queue.sh:75 redirects it), so
+    """THE VALUE IS USED. ask_q16's stdout IS out/*.log (scoping_queue.sh:75 redirects it), so
     what the process prints must arrive redacted -- a helper that exists but is not on the path
     the log travels is a decoration.
     """

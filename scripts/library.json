@@ -1014,6 +1014,16 @@
    "kind": "tool",
    "registered": "2026-09-14"
   },
+  "scripts/gate_cap.sh": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "Resolves GATE_CAP for the pre-commit hook from workspace/gate-settings.json: the saved value when readable, the 1800 s default otherwise with the reason printed, and a non-numeric value refused rather than passed to timeout(1). Sourced by the hook and executed by its suite so the test asserts the value, not the text",
+   "kind": "tool",
+   "registered": "2026-10-31"
+  },
   "scripts/gate_settings.py": {
    "by": "claude-code",
    "checks": {
@@ -1332,16 +1342,6 @@
    "kind": "tool",
    "registered": "2026-09-29"
   },
-  "scripts/manager_queue.sh": {
-   "by": "claude-code",
-   "checks": {
-    "blocks": 0,
-    "warns": 0
-   },
-   "description": "the manager works the top of QUEUE.md, one task at a time",
-   "kind": "tool",
-   "registered": "2026-09-24"
-  },
   "scripts/memory.py": {
    "by": "claude-code",
    "checks": {
@@ -1433,6 +1433,16 @@
    "description": "ONE-TIME (t9540): folds assigned: into needs: as vision|technical|rework|production; dry-run by default; refuses to apply if its own note would count as an escalation or if the 90% rate moves",
    "kind": "tool",
    "registered": "2026-10-28"
+  },
+  "scripts/migrate_queue_dir.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "Migrates the scoping queue's state directory when its name changes: moves run-logs/manager-queue to run-logs/scoping-queue with os.rename (never a copy), refuses when both or neither exists, when any scoping-queue@ instance systemd reports is active, or across filesystems; prints what it would do unless --apply",
+   "kind": "tool",
+   "registered": "2026-10-31"
   },
   "scripts/modellease.py": {
    "by": "bootstrap",
@@ -1788,6 +1798,16 @@
    "kind": "tool",
    "registered": "2026-10-08"
   },
+  "scripts/scoping_queue.sh": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "the manager works the top of QUEUE.md, one task at a time",
+   "kind": "tool",
+   "registered": "2026-09-24"
+  },
   "scripts/script_audit.py": {
    "by": "claude-code",
    "checks": {
@@ -1803,6 +1823,16 @@
    "description": "The master list of every script in this repository: workspace/SCRIPTS.md.",
    "kind": "tool",
    "registered": "2026-09-14"
+  },
+  "scripts/script_settings.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "Read-only description of a script from its own comments: the module docstring as purpose, each def/class with its docstring or the comment above it, and module-level constants whose value is a literal as knobs with value, type and line. Also lists the library. Never writes a script",
+   "kind": "tool",
+   "registered": "2026-10-30"
   },
   "scripts/searxng_up.sh": {
    "by": "claude-code",
@@ -1887,6 +1917,16 @@
    "description": "Everything you need to know before touching anything. One command.",
    "kind": "tool",
    "registered": "2026-09-14"
+  },
+  "scripts/set_knob.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "Sets ONE literal knob in a script: edits the literal describe() reported, keeps the trailing comment and quote style untouched, refuses a name bound to an expression, refuses a value of the wrong type rather than coercing, and shows the unified diff with --dry-run",
+   "kind": "tool",
+   "registered": "2026-10-30"
   },
   "scripts/signature_gate.py": {
    "by": "bootstrap",
@@ -5674,6 +5714,16 @@
    "kind": "test",
    "registered": "2026-09-24"
   },
+  "scripts/tests/test_every_producer_asks.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The check behind the pause: finds every spawn site of the model runner by two precise patterns, fails on one that is not in workspace/model-producers.json, fails on a registered entry that no longer spawns, requires a reason for every excluded observer, requires must_hold in every registered producer, and re-asserts the predicate. Made to produce the wrong answer on purpose before it was trusted",
+   "kind": "test",
+   "registered": "2026-10-30"
+  },
   "scripts/tests/test_every_start_books_a_reservation.py": {
    "by": "claude-code",
    "checks": {
@@ -6602,6 +6652,16 @@
    "kind": "test",
    "registered": "2026-10-30"
   },
+  "scripts/tests/test_gate_timeout_message.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for scripts/gate_cap.sh: a saved 3600 is the cap the hook runs with, a saved 900 likewise, no setting falls back to 1800 and says so, a non-numeric setting is refused with the value named, and the hook sources the resolver, uses $GATE_CAP rather than a literal, names rc 124 as a timeout and does not swallow a failed record",
+   "kind": "test",
+   "registered": "2026-10-31"
+  },
   "scripts/tests/test_gemma_autonomy.py": {
    "by": "bootstrap",
    "description": "Test Gemma's autonomous decision system.",
@@ -7218,6 +7278,16 @@
    "kind": "test",
    "registered": "2026-09-14"
   },
+  "scripts/tests/test_knob_box.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for feedback.apply_knob and the /scripts/set route: a knob is set and read back from the file, unknown names and wrong-typed values are refused, anything outside scripts/ is refused (including the Hub's own source and a traversal), and the page carries the form plus the restart note. Edits only a temporary copy",
+   "kind": "test",
+   "registered": "2026-10-30"
+  },
   "scripts/tests/test_landing_ledger_row.py": {
    "by": "claude-code",
    "checks": {
@@ -7278,16 +7348,6 @@
    "kind": "test",
    "registered": "2026-10-19"
   },
-  "scripts/tests/test_lane_manager_queue.py": {
-   "by": "claude-code",
-   "checks": {
-    "blocks": 0,
-    "warns": 0
-   },
-   "description": "lane_status MANAGER QUEUE: jobs, done/total, ETA",
-   "kind": "test",
-   "registered": "2026-09-24"
-  },
   "scripts/tests/test_lane_manager_view.py": {
    "by": "claude-code",
    "checks": {
@@ -7317,6 +7377,16 @@
    "description": "t4386 oracle: a lane closes because its start has a finish, not because of write order -- a child can log its terminal row before its parent logs the start",
    "kind": "test",
    "registered": "2026-10-25"
+  },
+  "scripts/tests/test_lane_scoping_queue.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "lane_status MANAGER QUEUE: jobs, done/total, ETA",
+   "kind": "test",
+   "registered": "2026-09-24"
   },
   "scripts/tests/test_lane_status.py": {
    "by": "bootstrap",
@@ -8870,6 +8940,16 @@
    "kind": "test",
    "registered": "2026-10-11"
   },
+  "scripts/tests/test_queue_dir_migration.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for migrate_queue_dir, scoping_lanes.write_grant and dispatch_loop.queue_dir_missing_note: neither directory refused, dry run reports without moving, any running instance refused, the real move takes claims and progress.log, both present refused, write_grant not creating the directory, and the dispatcher naming the old path",
+   "kind": "test",
+   "registered": "2026-10-31"
+  },
   "scripts/tests/test_raw_capture.py": {
    "by": "bootstrap",
    "description": "Every model call is recorded WHOLE, and the startup context reaches every path.",
@@ -9011,6 +9091,16 @@
    "description": "oracle for t1009",
    "kind": "test",
    "registered": "2026-10-14"
+  },
+  "scripts/tests/test_rename_left_no_broken_caller.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for the rename's residue: the new who_works name exists, the old one still resolves as the same function because a guarded caller uses it, and every who_works.<name>( call site in scripts/ resolves -- a dotted call git grep does not catch",
+   "kind": "test",
+   "registered": "2026-10-30"
   },
   "scripts/tests/test_restart_stale_dip.py": {
    "by": "claude-code",
@@ -10182,7 +10272,7 @@
     "blocks": 0,
     "warns": 0
    },
-   "description": "The scoping loop's --max-rounds in manager_queue.sh is at least ask_q16's default (t9549)",
+   "description": "The scoping loop's --max-rounds in scoping_queue.sh is at least ask_q16's default (t9549)",
    "kind": "test",
    "registered": "2026-10-28"
   },
@@ -10215,6 +10305,26 @@
    "description": "Every place that judges a script must name the same model -- corpus_scripts, truncation_review, the auditor role.",
    "kind": "test",
    "registered": "2026-09-15"
+  },
+  "scripts/tests/test_script_page.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for feedback.script_detail_html: a Python script is explained with its purpose, a knob with value and comment and a function name; a shell script likewise with its flags; a missing path says so; and the view is asserted read-only (no set_knob call, no write)",
+   "kind": "test",
+   "registered": "2026-10-30"
+  },
+  "scripts/tests/test_script_settings.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for script_settings.describe and library: purpose from the module docstring, function summaries from a docstring or the comment above it, literal module constants as knobs with type and line, a name bound to an expression is not a knob, classes are described, and a missing file is empty rather than a crash",
+   "kind": "test",
+   "registered": "2026-10-30"
   },
   "scripts/tests/test_search_scope.py": {
    "by": "bootstrap",
@@ -10971,6 +11081,16 @@
    "description": "oracle for t1040",
    "kind": "test",
    "registered": "2026-10-11"
+  },
+  "scripts/tests/test_set_knob.py": {
+   "by": "claude-code",
+   "checks": {
+    "blocks": 0,
+    "warns": 0
+   },
+   "description": "The suite for set_knob: the dry run reports without writing, the real run changes only the literal and keeps comments, quoting and sibling lines, the file still parses, an expression is refused with a reason, an unknown name is refused, and an int knob refuses a non-number",
+   "kind": "test",
+   "registered": "2026-10-30"
   },
   "scripts/tests/test_settings_banner.py": {
    "by": "claude-code",

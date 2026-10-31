@@ -43,7 +43,7 @@ pre = DL._own_scope({"kind": "rca", "chunk": "6ed92e74f7ed.json"})
 if os.environ.get("XDG_RUNTIME_DIR"):
     check("a launched job gets its own systemd scope", pre[:3] == ["systemd-run", "--user", "--scope"])
     probe = subprocess.run(pre + ["cat", "/proc/self/cgroup"], capture_output=True, text=True, timeout=60).stdout
-    check("  and runs outside the caller's service cgroup", ".scope" in probe and "manager-queue.service" not in probe)
+    check("  and runs outside the caller's service cgroup", ".scope" in probe and "scoping-queue@manager.service" not in probe)
 os.environ["HIVEMIND_NO_SCOPE"] = "1"
 check("HIVEMIND_NO_SCOPE runs it as before", DL._own_scope({"kind": "rca", "chunk": "x"}) == [])
 print(f"\n{ok} passed, {fail} failed")

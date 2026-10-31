@@ -97,7 +97,7 @@ def test_the_rule_covers_the_conditional_triggers_the_rca_recorded():
 
 
 def test_the_built_prompt_for_a_task_carries_the_rule():
-    """PREAMBLE is not a document -- build_prompt() is what manager_queue.sh runs and what a
+    """PREAMBLE is not a document -- build_prompt() is what scoping_queue.sh runs and what a
     Manager reads. Asserting on its output is the behaviour; asserting on the source file is
     the presence check that was refused.
     """

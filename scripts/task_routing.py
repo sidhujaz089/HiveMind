@@ -50,9 +50,9 @@ TASK_KIND = {t: k for k, t in KIND_TASK.items()}
 
 # WHAT A MODEL ROLE CAN ACTUALLY DO (Jas, 2026-10-07: "I want the task list for models to only show what
 # they can do"). Each is run on the role's model by the dispatcher (KIND_TASK, assigned_items) or by
-# manager_queue.sh (scoping); corpus indexing is the embedder's. Everything else on the Flow chart is
+# scoping_queue.sh (scoping); corpus indexing is the embedder's. Everything else on the Flow chart is
 # a script, a person's, or a step inside one of these (triage is inside session review, scope check is
-# scope_lint, Backlog is a second switch for the scoping queue -- manager_queue.sh still honours it).
+# scope_lint, Backlog is a second switch for the scoping queue -- scoping_queue.sh still honours it).
 # WHAT THE HARNESS CAN RUN ON A MODEL: the dispatcher's job kinds, Assigned items, and corpus indexing.
 RUNNABLE_TASKS = frozenset(KIND_TASK.values()) | {"assigned_items", "corpus_index"}
 FLOW = Path(__file__).resolve().parent.parent / "projects" / "local-inference" / "models" / "FLOW.json"

@@ -58,7 +58,7 @@ def rows(root):
 def test_records_a_real_verdict_with_a_real_hash():
     with tempfile.TemporaryDirectory() as d:
         root = Path(d)
-        mn.record_pair("t698", ANSWERS["b"], "workspace/run-logs/manager-queue/out/t698.md",
+        mn.record_pair("t698", ANSWERS["b"], "workspace/run-logs/scoping-queue/out/t698.md",
                        root=root)
         got = rows(root)
         check(len(got) == 1, f"expected one row, got {len(got)}")
@@ -72,7 +72,7 @@ def test_records_a_real_verdict_with_a_real_hash():
         check(r["needs"] == "jas", f"needs: expected 'jas', got {r.get('needs')!r}")
         check(r["status"] == "queued",
               f"status: expected 'queued' (decide at :71), got {r.get('status')!r}")
-        check(r["answer"] == "workspace/run-logs/manager-queue/out/t698.md",
+        check(r["answer"] == "workspace/run-logs/scoping-queue/out/t698.md",
               f"answer path not recorded verbatim: {r.get('answer')!r}")
         # the hash is COMPUTED at test time from the template the scoper runs on, never a
         # literal: a stub returning a constant string fails here

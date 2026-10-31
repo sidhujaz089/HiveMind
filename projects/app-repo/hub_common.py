@@ -279,10 +279,23 @@ PAGES = {
     "scripts": {
         "title": "Scripts",
         "what": "Script reviews waiting for a decision, and the library of every script with what "
-                "it is for and who calls it.",
+                "it is for and who calls it. Open one with /scripts?run=<path> and it is explained from "
+                "its OWN comments -- the module docstring for the purpose, each function's docstring or "
+                "the comment above it for its summary -- and its numbers are listed with their value, "
+                "their line and whatever the author wrote beside them. Each number has a BOX: setting one writes "
+                "the file and the value shown afterwards is read back FROM THE FILE, not echoed. Only scripts/ can "
+                "be changed -- never the Hub's own code -- and a running script keeps the value it started with "
+                "until it is restarted.",
         "source": ["workspace/script-reviews/ (the review queue)",
                    "scripts/library.json (the registry)", "workspace/SCRIPTS.md (generated)"],
-        "enforce": ["library", "test_library"],
+        "enforce": ["library", "test_library", "test_script_page", "test_knob_box"],
+        "_reviewed": "2026-10-31 (L2, rename): the queue directory is renamed with a migration and write_grant no longer recreates it; the paths these pages read moved. Earlier: 2026-10-30 (L2, later still): the loop the tab explains is renamed -- scoping_queue.sh, and one "
+                     "templated scoping-queue@.service per scoper -- so the page's references moved with it; the "
+                     "explanation itself is unchanged. Earlier 2026-10-30 (L2, later): the numbers are WRITABLE now -- one box per knob, posting to "
+                     "/scripts/set, applied by set_knob.py and read back from the file. Refused: anything outside "
+                     "scripts/ (the Hub's own code is in the library and must not be editable from itself), an "
+                     "expression, and a wrong-typed value. Earlier 2026-10-30 (L2): added the per-script view, "
+                     "read-only at the time.",
         "wrong": "A script that cannot run is unregistered. Register it with "
                  "scripts/library.py; a helper also needs a Flow node. Never copy a script "
                  "outside the library -- a second copy is a second source of truth.",

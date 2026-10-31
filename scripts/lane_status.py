@@ -294,12 +294,12 @@ def build_progress(ledger=None, now=None, lanes=2):
 MANAGER_QUEUE = REPO / "workspace" / "run-logs" / "manager-queue.json"
 
 
-def manager_queue(pointer=None, now=None):
+def scoping_queue(pointer=None, now=None):
     """The manager's queue: every job with its state, done/total, and an ETA.
 
     Jas, 2026-09-24: lane_status showed only the ONE manager job running, not the seven on its
     plate. The queue runner (a prompt directory, an answer directory, a progress log) says where
-    it is in workspace/run-logs/manager-queue.json: {"in": dir, "out": dir, "progress": file}.
+    it is in workspace/run-logs/scoping-queue.json: {"in": dir, "out": dir, "progress": file}.
     A job is DONE when its answer file is non-empty, RUNNING when the log has START without END,
     otherwise PENDING. ETA = pending x the median of this queue's finished job times, plus what
     is left of the running one. None when there is no pointer."""

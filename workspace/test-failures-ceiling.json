@@ -163,7 +163,6 @@
   "test_done_check_merged.py",
   "test_done_check_queue.py",
   "test_coder_collateral_gate.py",
-  "test_coder_range_hint.py",
   "test_coder_sandbox_transient_copy.py",
   "test_flag_corrections.py",
   "test_task_pinning.py",

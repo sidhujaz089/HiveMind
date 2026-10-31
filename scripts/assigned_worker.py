@@ -252,7 +252,7 @@ def run(tid, role, model, ask=_ask, d=None):
 
 
 def _to_builder(tid, answer, model):
-    """A PLAN IN AN ASSIGNED ANSWER REACHES A BUILDER (t1568, 2026-10-26). Only manager_queue.sh handed a
+    """A PLAN IN AN ASSIGNED ANSWER REACHES A BUILDER (t1568, 2026-10-26). Only scoping_queue.sh handed a
     chunks block to bridge_trigger, so an assigned role's plan became a note and nothing else: t1448 and
     t1250 were re-scoped, re-held and looped. Same step, same flags as the queue's: --lint refuses a broken
     scope back to the scoper, --freeze merges a passing one by the gates, --record scores it."""

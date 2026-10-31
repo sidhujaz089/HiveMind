@@ -78,7 +78,7 @@ def _group(comm, cmd):
         return "claude-code"
     if "claude-desktop" in cmd:
         return "claude-app"
-    if any(s in cmd for s in ("feedback.py", "workspace_mcp", "dispatch_loop.py", "manager_queue.sh",
+    if any(s in cmd for s in ("feedback.py", "workspace_mcp", "dispatch_loop.py", "scoping_queue.sh",
                               "agent_shell", "model_chat", "dsh", "cloudflared", "docker")):
         return "services"
     if comm.startswith(("gnome", "gdm", "Xwayland", "firefox", "pipewire", "wireplumber",

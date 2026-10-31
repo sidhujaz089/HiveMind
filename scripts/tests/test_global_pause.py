@@ -4,8 +4,8 @@
 Jas: *"Fix the gaps in production so when I press pause it stops every model from working on tasks."*
 
 Measured before this: of the seven things that start work, exactly ONE consulted a pause flag --
-scripts/manager_queue.sh -- and even that only half way, because its device check sits inside `if [ "$SCOPER" !=
-manager ]` (manager_queue.sh:176). The bridge, bridge_trigger, scope_queue, night_queue, autonomy_loop and supervise
+scripts/scoping_queue.sh -- and even that only half way, because its device check sits inside `if [ "$SCOPER" !=
+manager ]` (scoping_queue.sh:176). The bridge, bridge_trigger, scope_queue, night_queue, autonomy_loop and supervise
 consulted neither flag. So Jas pressed pause on both devices and the manager loop went straight on scoping (its own
 progress.log: "03:43:03Z START t9580 ... role manager").
 
@@ -76,7 +76,7 @@ for rel, what in SPAWNERS.items():
     check(f"{what} asks must_hold before it starts a model", spawns and "must_hold" in src,
           "it spawns the model runner and never asks the pause")
 # and the shell loop that drives scoping asks it too
-sh = (HERE / "scripts" / "manager_queue.sh").read_text(encoding="utf-8")
+sh = (HERE / "scripts" / "scoping_queue.sh").read_text(encoding="utf-8")
 check("the scoping loop asks must_hold for EVERY scoper",
       "must_hold" in sh and 'must_hold(role=' in sh, "the loop can still be selective")
 

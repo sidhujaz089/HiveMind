@@ -255,12 +255,28 @@ def slots(path, model=None):
     (OLLAMA_NUM_PARALLEL in the unit), never a number kept here. Unknown paths have 1. And 1 for a
     model whose architecture Ollama runs serially whatever the unit says (serial_archs): more lease
     slots than the server has only queue the extra callers inside Ollama, each timing out 4x later."""
-    eng = _engine_slots(model or _lease_model(Path(path)))
+    m_ = model or _lease_model(Path(path))
+    eng = _engine_slots(m_)
     if eng:
-        return eng
+        return 1 if is_serial(m_) else eng
     n = _unit_slots(path)
     m = model or (_lease_model(Path(path)) if n > 1 else None)
     return 1 if n > 1 and m and model_arch(m) in serial_archs() else n
+
+
+def is_serial(model):
+    """True when Ollama runs this model's architecture serially, whatever any server declares.
+
+    THE CAP APPLIES LAST (2026-10-30). `slots()` returned the ENGINE's number when an engine declared one (vLLM's
+    max_num_seqs, and since A2 the engine's LIVE value), and returned early -- so a serial-architecture model was
+    handed 4 lanes by a declaration, which is exactly the queueing-and-timeout the serial rule exists to prevent. The
+    rule is about the model, not about who declared the capacity, so it is applied after every other source.
+    """
+    try:
+        return bool(model) and model_arch(model) in serial_archs()
+    except Exception as e:                                          # noqa: BLE001 -- said, not swallowed
+        print(f"  NOTE: cannot read the architecture of {model!r} ({type(e).__name__}: {e})")
+        return False
 
 
 def _engine_slots(model):

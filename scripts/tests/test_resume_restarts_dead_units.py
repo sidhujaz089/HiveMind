@@ -21,7 +21,7 @@ def check(name, cond):
     ok += bool(cond); fail += not cond
 
 
-UNITS = ["swift.service", "manager-queue.service", "auditor-scoping.service"]
+UNITS = ["swift.service", "scoping-queue@manager.service", "scoping-queue@auditor.service"]
 
 
 class R:

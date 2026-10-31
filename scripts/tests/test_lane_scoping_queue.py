@@ -39,7 +39,7 @@ def main():
         ptr = t / "q.json"
         ptr.write_text(json.dumps({"in": str(t / "in"), "out": str(t / "out"),
                                    "progress": str(t / "progress.log")}))
-        q = LS.manager_queue(ptr, now=now)
+        q = LS.scoping_queue(ptr, now=now)
     states = {j["job"]: j["state"] for j in q["jobs"]}
     report("done / running / pending per job", states,
            {"a-job": "done", "b-job": "pending", "c-job": "running", "d-job": "pending"})
@@ -48,7 +48,7 @@ def main():
     report("median of finished job times (1200, 1200)", q["median_s"], 1200)
     report("ETA = 2 pending x 1200 + running remainder (1200-600), whole seconds",
            abs(q["eta_s"] - 3000) <= 2, True)
-    report("no pointer -> nothing shown", LS.manager_queue(Path(tmp) / "none.json"), None)
+    report("no pointer -> nothing shown", LS.scoping_queue(Path(tmp) / "none.json"), None)
     print(f"\n{PASSED} passed, {FAILED} failed")
     return 1 if FAILED else 0
 

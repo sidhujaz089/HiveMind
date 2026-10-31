@@ -18,12 +18,13 @@ run records its duration, its exit code, whether it hit the cap, and where it ra
 """
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SETTINGS = REPO / "workspace" / "gate-settings.json"
+SETTINGS = Path(os.environ.get("HIVEMIND_GATE_SETTINGS") or (REPO / "workspace" / "gate-settings.json"))
 RUNS = REPO / "workspace" / "gate-runs.jsonl"
 DEFAULT_TIMEOUT_S = 1800.0
 TIMEOUT_RC = 124
@@ -55,7 +56,8 @@ def timeout_s(path=None):
     try:
         val = float(data.get("timeout_s"))
     except (TypeError, ValueError):
-        print(f"  NOTE: {p} has no usable timeout_s -- using the {timeout_default():g} s default", file=sys.stderr)
+        print(f"  NOTE: {p} has no usable timeout_s (it says {data.get('timeout_s')!r}) -- using the "
+              f"{timeout_default():g} s default", file=sys.stderr)
         return timeout_default()
     if val <= 0:
         print(f"  NOTE: {p} says {val:g} s, which cannot bound anything -- using the default", file=sys.stderr)
@@ -136,11 +138,40 @@ def summary(rows):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="The gate's timeout setting, and what its runs actually cost.")
-    ap.add_argument("action", nargs="?", choices=["show", "set"], default="show")
-    ap.add_argument("value", nargs="?", help="seconds, for 'set'")
+    ap.add_argument("action", nargs="?", choices=["show", "set", "get", "record"], default="show")
+    ap.add_argument("value", nargs="?", help="seconds, for 'set' and 'record'")
+    ap.add_argument("extra", nargs="*", help="record: <rc> <where>")
     ap.add_argument("--why", default="", help="recorded with the new value")
     ap.add_argument("--json", action="store_true", help="the run rows themselves")
     a = ap.parse_args(argv)
+    # 'get' EXISTS FOR THE SHELL, AND ITS ABSENCE WAS A REAL DEFECT (2026-10-31). The pre-commit hook called
+    # `gate_settings.py get`, the subcommand did not exist, argparse exited 2, the hook's `|| echo 1800` hid it, and the
+    # hook therefore NEVER read the setting -- always 1800. Claude found it; a probe with the setting at 3600 captured
+    # 1800. One number, printed alone, so the hook needs no sed and cannot parse a report by accident.
+    if a.action == "get":
+        # THE SHELL NEEDS TO KNOW WHY IT GOT THIS NUMBER (2026-10-31). Printing "1800" for both "the setting says
+        # 1800" and "there is no setting" is the silence this whole change exists to remove: the hook fell back and
+        # nobody could tell. 0 means the setting was read; 3 means there is none; 4 means it could not be used.
+        if not SETTINGS.is_file():
+            print(f"{timeout_default():g}")
+            print(f"  NOTE: no saved setting at {SETTINGS} -- using the {timeout_default():g} s default", file=sys.stderr)
+            return 3
+        val = timeout_s()
+        print(f"{val:g}")
+        try:
+            saved = float(json.loads(SETTINGS.read_text(encoding="utf-8")).get("timeout_s"))
+        except (OSError, ValueError, TypeError, AttributeError):
+            saved = None
+        if saved != val:
+            return 4          # timeout_s() has already said why; a second note for one fallback is noise
+        return 0
+    # 'record' exists so a shell hook can log its own run without importing python inline.
+    if a.action == "record":
+        if a.value is None:
+            ap.error("record needs <seconds>")
+        rc = int(a.extra[0]) if a.extra else 0
+        where = a.extra[1] if len(a.extra) > 1 else "hook"
+        return 0 if record_run(a.value, rc, where) else 1
     if a.action == "set":
         if a.value is None:
             ap.error("set needs a number of seconds")

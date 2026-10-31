@@ -172,7 +172,7 @@ def main():
     import copy as _c2, manager_next as _mn, who_works as _ww
     real = (dl.launch, dl.classify, dl.ledger_running, dl.priority_items, dl.ROUTING, dl._scope2)
     real_sos2 = dl.scoping_on_station
-    real_mn, real_ww = _mn.upcoming, _ww.manager_queue_now
+    real_mn, real_ww = _mn.upcoming, _ww.scoping_queue_now
     flags = []
     try:
         dl.launch = lambda job: launched.append(job) or (4242, dl.REPO / "x.log")
@@ -198,7 +198,7 @@ def main():
                job and job["kind"], "rca")
     finally:
         dl.launch, dl.classify, dl.ledger_running, dl.priority_items, dl.ROUTING, dl._scope2 = real
-        _mn.upcoming, _ww.manager_queue_now = real_mn, real_ww
+        _mn.upcoming, _ww.scoping_queue_now = real_mn, real_ww
         dl.scoping_on_station = real_sos2
     print(f"\n{PASSED} passed, {FAILED} failed")
     return 1 if FAILED else 0

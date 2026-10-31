@@ -32,7 +32,7 @@ RECORDS = {
     "workspace/agent-runs.jsonl": '{"event": "fixture", "n": 1}\n',
     "workspace/backup-runs.jsonl": '{"event": "fixture", "n": 2}\n',
     "workspace/dispatch-loop.jsonl": '{"event": "fixture", "n": 3}\n',
-    "workspace/run-logs/manager-queue/out/t001.md": "# t452 fixture run log\n",
+    "workspace/run-logs/scoping-queue/out/t001.md": "# t452 fixture run log\n",
     "workspace/manager-answers/2026-09-28/answer-1.md": "# t452 fixture answer\n",
     "workspace/tasks/t001.md": "# t452 fixture task\n",
 }

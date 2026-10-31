@@ -25,20 +25,20 @@ def main():
         log = Path(d) / "progress.log"
         log.write_text("05:10:48Z START t459 (task t459)\n05:35:40Z END t459 rc=0\n"
                        "05:35:40Z START t460 (task t460)\n")
-        report("an open START is the manager's task", ww.manager_queue_now(log), "t460")
+        report("an open START is the manager's task", ww.scoping_queue_now(log), "t460")
         log.write_text(log.read_text() + "06:02:35Z YIELD priority work is waiting; not starting t461\n")
         report("a YIELD after START closes it (restart killed t460 with no END)",
-               ww.manager_queue_now(log), None)
+               ww.scoping_queue_now(log), None)
 
         # THE QUEUE'S TASK GOES ON THE TILE OF THE SERVER IT RUNS ON (2026-10-02).
         log.write_text("19:52:51Z START t648 (task t648) station 2\n")
-        report("a START on station 2 is the Senior's", ww.manager_queue_station(log), 2)
+        report("a START on station 2 is the Senior's", ww.scoping_queue_station(log), 2)
         log.write_text("19:52:51Z START t648 (task t648) station 1\n")
-        report("a START on station 1 is the Manager's", ww.manager_queue_station(log), 1)
+        report("a START on station 1 is the Manager's", ww.scoping_queue_station(log), 1)
         log.write_text("05:35:40Z START t460 (task t460)\n")
-        report("an old START with no station is the main server's", ww.manager_queue_station(log), 1)
+        report("an old START with no station is the main server's", ww.scoping_queue_station(log), 1)
         log.write_text("19:52:51Z START t648 (task t648) station 2\n19:59:00Z END t648 rc=0\n")
-        report("an ENDed task has no station", ww.manager_queue_station(log), None)
+        report("an ENDed task has no station", ww.scoping_queue_station(log), None)
 
         # WORK NO ROLE HAS IS NOBODY'S NEXT (2026-10-02): the tick filtered role != "coder", so the
         # held session reviews showed as the Manager's Next after Jas removed the task.

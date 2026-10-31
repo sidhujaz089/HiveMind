@@ -72,7 +72,11 @@ GUARDED = ("scripts/memory_guard.py", "scripts/auto_merge.py", "scripts/hooks/",
 REVIEW_RE = re.compile(r"^Reviewed-by:\s*([A-Za-z0-9._-]+/[A-Za-z0-9._:-]+)\s*"
                        r"\(((?:diff|oracle|suite-run|live)"
                        r"(?:\s*\+\s*(?:diff|oracle|suite-run|live))*)\)\s*$", re.MULTILINE)
-LANE_RE = re.compile(r"^Lane:\s*(L[1-4])\s*$", re.MULTILINE)
+# ANY LABEL, NOT L1..L4 (Jas, 2026-10-30: "These L1, 2, 3, & 4 should be gone"). The four names were a sprint's
+# instances; the trailer now says who is claiming a file. CAPPED AT 24 CHARACTERS, and the commit-msg hook uses the
+# same cap -- the two disagreed once (Claude, 2026-10-31): the hook accepted any length and this regex rejected
+# anything over 24, so a 30-character label passed one and failed the other.
+LANE_RE = re.compile(r"^Lane:\s*([A-Za-z0-9][A-Za-z0-9_.-]{0,23})\s*$", re.MULTILINE)
 
 
 def git(*args):

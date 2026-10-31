@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-SOURCES = [REPO / "workspace" / "run-logs" / "manager-queue" / "out",
+SOURCES = [REPO / "workspace" / "run-logs" / "scoping-queue" / "out",
            REPO / "workspace" / "manager-answers"]
 CITE = re.compile(r"`((?:scripts|projects|workspace|docs)/[A-Za-z0-9_./-]+?\.[a-z]{1,6})(?::(\d+)(?:-(\d+))?)?`")
 _HIST = {}

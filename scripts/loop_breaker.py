@@ -33,7 +33,7 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PROGRESS = REPO / "workspace" / "run-logs" / "manager-queue" / "progress.log"
+PROGRESS = REPO / "workspace" / "run-logs" / "scoping-queue" / "progress.log"
 LEDGER = REPO / "workspace" / "loop-breaker.jsonl"
 
 LOOP_N = 3                  # identical results in a row that make a loop

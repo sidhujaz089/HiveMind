@@ -18,10 +18,10 @@ WHAT THIS SUITE PINS: the row -- {ts, actor, task, from:{lane,station}, to:{lane
 command, flow_version, repo_head} -- appended whole, one per switch, at the path the task
 names (workspace/flow-lane-changes.jsonl, NOT the tick rows t675 is slimming), with the
 cause recorded when the repo head cannot be read. It pins the writer only. The endpoints
-that supply the arguments -- scripts/manager_queue.sh, where STATION is set (75 -> 92),
+that supply the arguments -- scripts/scoping_queue.sh, where STATION is set (75 -> 92),
 and scripts/role_store.py, where a role's endpoint is saved -- are recorded in
-workspace/run-logs/manager-queue/out/t812.md, because an oracle that reached them would
-either call a model (scripts/ask_q16.py, manager_queue.sh:28) or write live state, and both
+workspace/run-logs/scoping-queue/out/t812.md, because an oracle that reached them would
+either call a model (scripts/ask_q16.py, scoping_queue.sh:28) or write live state, and both
 are refused for a test.
 
 NOTE ON THE FIXTURE SHAPE: FLOW.json is deliberately not modelled here. Verified 2026-10-09
@@ -103,16 +103,16 @@ class LaneChangeRecord(unittest.TestCase):
     def test_record_lane_change_writes_one_row_with_the_named_fields(self):
         row = flow_change.record_lane_change(
             actor="jas", task="t760",
-            from_lane="manager_queue", from_station=2,
-            to_lane="manager_queue", to_station=1,
+            from_lane="scoping_queue", from_station=2,
+            to_lane="scoping_queue", to_station=1,
             command=SWITCH_COMMAND, flow_version="7", repo_head="dee6eaf5")
         rows = _rows(self.ledger)
         self.assertEqual(len(rows), 1, "record_lane_change wrote no ledger row")
         got = rows[0]
         self.assertEqual(got["actor"], "jas")
         self.assertEqual(got["task"], "t760")
-        self.assertEqual(got["from"], {"lane": "manager_queue", "station": 2})
-        self.assertEqual(got["to"], {"lane": "manager_queue", "station": 1})
+        self.assertEqual(got["from"], {"lane": "scoping_queue", "station": 2})
+        self.assertEqual(got["to"], {"lane": "scoping_queue", "station": 1})
         self.assertEqual(got["command"], SWITCH_COMMAND)
         self.assertEqual(got["flow_version"], "7")
         self.assertEqual(got["repo_head"], "dee6eaf5")
@@ -126,7 +126,7 @@ class LaneChangeRecord(unittest.TestCase):
         worse than no row, because nothing flags the loss."""
         long_cmd = SWITCH_COMMAND + " " + ("run one real tick " * 150)   # ~2.4 KB, past any cap
         self.assertGreater(len(long_cmd), 1000)
-        flow_change.record_lane_change("jas", "t760", "manager_queue", 2, "manager_queue", 1,
+        flow_change.record_lane_change("jas", "t760", "scoping_queue", 2, "scoping_queue", 1,
                                        command=SWITCH_COMMAND)
         flow_change.record_lane_change("manager", "t812", "scoping", 1, "scoping", 2,
                                        command=long_cmd)
@@ -138,7 +138,7 @@ class LaneChangeRecord(unittest.TestCase):
         self.assertEqual(rows[1]["to"], {"lane": "scoping", "station": 2})
 
     def test_a_row_is_one_json_object_per_line(self):
-        flow_change.record_lane_change("jas", "t812", "manager_queue", 2, "manager_queue", 1)
+        flow_change.record_lane_change("jas", "t812", "scoping_queue", 2, "scoping_queue", 1)
         text = self.ledger.read_text(encoding="utf-8")
         self.assertEqual(text.count("}\n"), 1, "the ledger is JSONL: one object per line, terminated")
         json.loads(text.strip())
@@ -149,7 +149,7 @@ class LaneChangeRecord(unittest.TestCase):
         """swallowed-exception-introduced: repo_head must never be null, empty, absent, and
         never a bare exit code -- the cause goes in the row, and the row goes in the file."""
         flow_change.REPO = Path(self._tmp.name) / "not-a-repo"
-        flow_change.record_lane_change("manager", "t812", "manager_queue", 2, "manager_queue", 1)
+        flow_change.record_lane_change("manager", "t812", "scoping_queue", 2, "scoping_queue", 1)
         rows = _rows(self.ledger)
         self.assertEqual(len(rows), 1,
                          "a repo-head failure swallowed the row: a lane move was lost silently")
@@ -165,8 +165,8 @@ class LaneChangeRecord(unittest.TestCase):
         """Losing the row is not a permissible way of reporting a missing head."""
         flow_change.REPO = Path(self._tmp.name) / "not-a-repo"
         try:
-            flow_change.record_lane_change("manager", "t812", "manager_queue", 2,
-                                           "manager_queue", 1, command=SWITCH_COMMAND)
+            flow_change.record_lane_change("manager", "t812", "scoping_queue", 2,
+                                           "scoping_queue", 1, command=SWITCH_COMMAND)
         except Exception as e:                                    # noqa: BLE001
             self.fail(f"record_lane_change raised {type(e).__name__}: {e} when the repo head "
                       f"could not be read -- a lane switch must not be lost to it")
@@ -174,7 +174,7 @@ class LaneChangeRecord(unittest.TestCase):
     # ---- the defaults a caller must not have to supply ----------------------------------
 
     def test_repo_head_defaults_to_the_head_the_row_is_written_at(self):
-        flow_change.record_lane_change("manager", "t812", "manager_queue", 2, "manager_queue", 1)
+        flow_change.record_lane_change("manager", "t812", "scoping_queue", 2, "scoping_queue", 1)
         rows = _rows(self.ledger)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["repo_head"], _head(),
@@ -186,7 +186,7 @@ class LaneChangeRecord(unittest.TestCase):
     def test_the_suite_leaves_the_live_ledger_alone(self):
         """A test that writes workspace/flow-lane-changes.jsonl is a test that dirties the
         worktree and pollutes the very ledger it is meant to guard."""
-        flow_change.record_lane_change("jas", "t812", "manager_queue", 2, "manager_queue", 1)
+        flow_change.record_lane_change("jas", "t812", "scoping_queue", 2, "scoping_queue", 1)
         self.assertFalse(LIVE_LEDGER.exists(),
                          "the suite wrote the live workspace/flow-lane-changes.jsonl: "
                          "LANE_LOG must be read at call time so a suite can redirect it")

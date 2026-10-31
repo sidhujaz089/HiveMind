@@ -58,8 +58,8 @@ MANAGER_ROLE = {"tag": "swift", "what": "Supervises, reviews briefs, scopes the 
 CODER_ROLE = {"tag": "swift", "what": "The production build lane."}
 EMBEDDER_ROLE = {"tag": "qwen3-embedding:0.6b", "what": "memory.py recall and the corpus index."}
 
-LIVE_CHART = chart("app-feedback.service", "manager-queue.service", "swift.service")
-CHART_WITH_STATION = chart("app-feedback.service", "manager-queue.service",
+LIVE_CHART = chart("app-feedback.service", "scoping-queue@manager.service", "swift.service")
+CHART_WITH_STATION = chart("app-feedback.service", "scoping-queue@manager.service",
                            "ollama-station2.service")
 
 
@@ -97,7 +97,7 @@ def main():
 
     # --- the defect as found: the ROLE label is not the STATION ---------------------------
     label_chart = {"services": [{"id": "svc_senior", "name": "Senior review lane",
-                                 "unit": "manager-queue.service"}]}
+                                 "unit": "scoping-queue@manager.service"}]}
     out2 = FC.station_gaps(serving, label_chart)
     check("a services node NAMED 'Senior' does not cover the station -- the chart node is the "
           "server the role runs on, not the role's label (the finding verbatim: the role label "

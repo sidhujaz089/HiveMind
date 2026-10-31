@@ -92,7 +92,7 @@ def main():
                   f"{type(e).__name__}: {e}")
             return 1
 
-    live = ROOT / "workspace" / "run-logs" / "manager-queue"
+    live = ROOT / "workspace" / "run-logs" / "scoping-queue"
     before = snapshot(live)
     tmp = Path(tempfile.mkdtemp(prefix="t1154-column-order-"))
     patches = [

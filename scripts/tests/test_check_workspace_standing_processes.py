@@ -3,7 +3,7 @@
 
 check_workspace.py:1741 decides on-chart-ness with `unit.rsplit(".", 1)[0] not in
 flow_text`: a substring over the whole 96 KB chart. A task note that mentions
-`auditor-scoping.service` therefore makes the check PASS with no services[] row for the
+`scoping-queue@auditor.service` therefore makes the check PASS with no services[] row for the
 unit that made it fire -- a green light that means nothing (workspace/failure-schema.json,
 check-satisfied-by-dead-path). This suite drives the real Checker over a throwaway repo and
 pins what the finding list has to be built from: a unit named only in prose is a FINDING, a
@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import check_workspace  # noqa: E402
 
 NAME = "Every standing process is on the Flow chart"
-REPO_MARK = "/home/user/ai-workspace/scripts/manager_queue.sh"
+REPO_MARK = "/home/user/ai-workspace/scripts/scoping_queue.sh"
 
 
 class _Done:
@@ -74,7 +74,7 @@ def _fixture(tmp, chart, units, cron):
     for name in units:
         # A unit the repo deploys: its ExecStart points into the checkout, which is the
         # filter at check_workspace.py:1740.
-        (units_dir / name).write_text(f"[Service]\nExecStart={root}/scripts/manager_queue.sh\n", encoding="utf-8")
+        (units_dir / name).write_text(f"[Service]\nExecStart={root}/scripts/scoping_queue.sh\n", encoding="utf-8")
     return root
 
 
@@ -124,14 +124,14 @@ def test_a_unit_named_only_in_prose_is_reported():
     substring over the chart text is satisfied by that sentence, so today the check says
     PASS with no services[] row for the unit that made it fire: this assertion is RED on
     main, and it is why the green check at 2026-10-14T22:04:44Z could not be trusted."""
-    chart = _chart([{"id": "svc_manager", "name": "Manager queue", "unit": "manager-queue.service"}],
+    chart = _chart([{"id": "svc_manager", "name": "Manager queue", "unit": "scoping-queue@manager.service"}],
                    [{"id": "t1206", "name": "Hourly check",
-                     "note": "auditor-scoping.service runs scripts/manager_queue.sh auditor"}])
-    status, detail, _calls = _verdict(chart, units=["auditor-scoping.service"])
+                     "note": "scoping-queue@auditor.service runs scripts/scoping_queue.sh auditor"}])
+    status, detail, _calls = _verdict(chart, units=["scoping-queue@auditor.service"])
     assert status == "FAIL", \
-        (f"the chart names `auditor-scoping.service` only in a task NOTE and the check said "
+        (f"the chart names `scoping-queue@auditor.service` only in a task NOTE and the check said "
          f"{status!r}: prose on the chart is being taken for a service row. detail: {detail}")
-    assert "auditor-scoping.service" in detail, \
+    assert "scoping-queue@auditor.service" in detail, \
         f"the finding does not name the off-chart unit: {detail!r}"
     assert "manager-queue" not in detail, \
         f"a unit the chart's services[] row names is reported: {detail!r}"
@@ -139,19 +139,19 @@ def test_a_unit_named_only_in_prose_is_reported():
 
 def test_a_unit_named_on_the_services_row_is_not_reported():
     """The fix must close the instance: a services[] row naming the unit satisfies the
-    check, so registering auditor-scoping.service makes the next hourly run green."""
+    check, so registering scoping-queue@auditor.service makes the next hourly run green."""
     chart = _chart([{"id": "svc_auditor_scoping", "name": "Auditor scoping",
-                     "unit": "auditor-scoping.service"}], [])
-    status, detail, _calls = _verdict(chart, units=["auditor-scoping.service"])
+                     "unit": "scoping-queue@auditor.service"}], [])
+    status, detail, _calls = _verdict(chart, units=["scoping-queue@auditor.service"])
     assert status == "PASS", f"a services[] row naming the unit is still a finding: {detail!r}"
     assert "auditor-scoping" not in detail, f"the finding lists a charted unit: {detail!r}"
 
 
 def test_a_unit_the_chart_never_names_is_reported():
     """The class the check exists for, and the value of the finding string."""
-    chart = _chart([{"id": "svc_manager", "name": "Manager queue", "unit": "manager-queue.service"}],
+    chart = _chart([{"id": "svc_manager", "name": "Manager queue", "unit": "scoping-queue@manager.service"}],
                    [{"id": "t1206", "name": "Audit", "note": "no process names here"}])
-    status, detail, _calls = _verdict(chart, units=["night-watch.service", "manager-queue.service"])
+    status, detail, _calls = _verdict(chart, units=["night-watch.service", "scoping-queue@manager.service"])
     assert status == "FAIL", f"an uncharted unit was not reported: {detail!r}"
     assert "night-watch.service" in detail, f"the off-chart unit is not named: {detail!r}"
     assert "manager-queue" not in detail, f"a charted unit was reported: {detail!r}"

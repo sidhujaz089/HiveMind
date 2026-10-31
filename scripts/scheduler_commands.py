@@ -123,7 +123,7 @@ def stop_job(pid, who="jas"):
     import lane_status
     tracked = {int(r["pid"]) for r in lane_status.snapshot()["lanes"] if r.get("pid")}
     tracked |= {int(r["pid"]) for r in DL.ledger_running() if r.get("pid")}
-    # A SCOPING WORKER (parallel scoping, 2026-10-08) is a manager_queue.sh subshell; its claim
+    # A SCOPING WORKER (parallel scoping, 2026-10-08) is a scoping_queue.sh subshell; its claim
     # holds the pid. Stop takes the worker's children too (ask_q16 under timeout), by pid.
     import scoping_lanes
     workers = {int(p) for _, p in scoping_lanes.live()}
@@ -185,7 +185,7 @@ _REAL_RUN = _subprocess.run
 # A TEST NEVER DRIVES THE LIVE UNITS (t1557, 2026-10-23). test_device_pause.py faked _systemctl, but a
 # person's gx10_off stops the production units through its own subprocess.run (b9cccaaca), which it
 # did not fake -- so every run of that suite, directly or inside a coder.py sandbox baseline, ran
-# `systemctl --user --no-block stop manager-queue.service auditor-scoping.service` on the live box.
+# `systemctl --user --no-block stop scoping-queue@manager.service scoping-queue@auditor.service` on the live box.
 # The hourly sweep did it at 13:24, 14:22, 14:26, 14:29 and 14:34 MDT and the Manager and Auditor never
 # stayed up. Same shape as refuse_live_device_pause_ledger: a test process reaching the REAL
 # systemctl raises here, at the primitive. A suite that fakes subprocess.run is hermetic and passes.

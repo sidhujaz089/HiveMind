@@ -27,13 +27,13 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 SNAP = REPO / "workspace" / "run-logs" / "who-works.json"
-PROGRESS = REPO / "workspace" / "run-logs" / "manager-queue" / "progress.log"
+PROGRESS = REPO / "workspace" / "run-logs" / "scoping-queue" / "progress.log"
 ROLES = ("manager", "senior", "frontline", "auditor")
 TASK = re.compile(r"\b(t\d{2,4})\b")
 
 KIND_LABEL = {"production": "build", "preflight": "preflight", "supervise": "supervision",
               "session-review": "session review", "rca": "RCA", "script-review": "script review",
-              "manager-queue": "backlog task", "console": "console message", "script-audit": "script audit",
+              "scoping-queue": "backlog task", "console": "console message", "script-audit": "script audit",
               "scoping": "scoping"}
 
 
@@ -171,7 +171,7 @@ def _alive(pid):
         return False
 
 
-def manager_queue_all(progress=PROGRESS):
+def scoping_queue_all(progress=PROGRESS):
     """Every task a scoping worker holds now (parallel scoping, 2026-10-08): the live claims, else
     the one open START in progress.log (a queue from before claims existed)."""
     try:
@@ -184,17 +184,17 @@ def manager_queue_all(progress=PROGRESS):
             return claimed
     except Exception as e:                                          # noqa: BLE001 -- the log still answers
         print(f"who_works: scoping claims unreadable ({type(e).__name__}: {e})", file=sys.stderr)
-    one = _manager_queue_open(progress)
+    one = _scoping_queue_open(progress)
     return [one] if one else []
 
 
-def manager_queue_now(progress=PROGRESS):
-    """The first task a scoping worker holds, or None (manager_queue_all has every one)."""
-    every = manager_queue_all(progress)
+def scoping_queue_now(progress=PROGRESS):
+    """The first task a scoping worker holds, or None (scoping_queue_all has every one)."""
+    every = scoping_queue_all(progress)
     return every[0] if every else None
 
 
-def _manager_queue_open(progress=PROGRESS):
+def _scoping_queue_open(progress=PROGRESS):
     """The task the manager queue has STARTed and not yet ENDed, or None."""
     cur = None
     try:
@@ -211,12 +211,12 @@ def _manager_queue_open(progress=PROGRESS):
     return cur
 
 
-def manager_queue_station(progress=PROGRESS):
+def scoping_queue_station(progress=PROGRESS):
     """The station (1 main, 2 the Senior's) the open manager-queue task runs on, or None.
 
     WHOSE TILE IS BY SERVER, NOT BY LAUNCHER (Jas, 2026-10-02: "They're both running on two different
     servers ... why does it look like their jobs are in the wrong lane?"). When scoping is the
-    Senior's, manager_queue.sh runs it on station 2 as the Senior and says so on the START line; the
+    Senior's, scoping_queue.sh runs it on station 2 as the Senior and says so on the START line; the
     tile put it under the Manager anyway, and the Senior read idle while its server was busy."""
     cur = None
     try:
@@ -254,12 +254,12 @@ def snapshot(path=SNAP):
         rr["now"] = keep
     doc["ended"] = ended
     mgr = doc["roles"]["manager"]
-    runs = doc["roles"]["senior" if manager_queue_station() == 2 else "manager"]
-    for mq in manager_queue_all():
+    runs = doc["roles"]["senior" if scoping_queue_station() == 2 else "manager"]
+    for mq in scoping_queue_all():
         # ONE LINE PER WORKER (2026-10-08): its model call is already listed as kind "manager"
         # ("manager: tNNN (top of QUEUE.md)"); adding the claim too showed 3 workers as 5.
         if not any(i.get("task") == mq for i in runs["now"]):
-            runs["now"].append(item("manager-queue", mq, task=mq))
+            runs["now"].append(item("scoping-queue", mq, task=mq))
     if not mgr["next"]:
         try:
             import sys
@@ -272,7 +272,7 @@ def snapshot(path=SNAP):
                 return doc
             import manager_next
             picked, _ = manager_next.upcoming(1)
-            mgr["next"] = [item("manager-queue", t, task=t) for t, _ in picked if t != mq]
+            mgr["next"] = [item("scoping-queue", t, task=t) for t, _ in picked if t != mq]
         except Exception as e:                                      # noqa: BLE001
             doc["note"] = f"manager's next backlog task unreadable: {type(e).__name__}: {e}"
     return doc
@@ -462,3 +462,9 @@ def _user_managers(procs):
     """systemd --user: what a test helper is re-parented to when its test exits without it."""
     return {pid for pid, p in procs.items() if p["cmd"].startswith(("/usr/lib/systemd/systemd --user",
                                                                    "/lib/systemd/systemd --user"))}
+
+
+# THE OLD NAME, KEPT ON PURPOSE (2026-10-30). dispatch_loop.py still calls manager_queue_now() at one site; renaming it
+# there needs a signature on a guarded file. Rather than leave main with a call to a name that does not exist, the old
+# name is an ALIAS: no behaviour change, and it goes the moment that caller is renamed.
+manager_queue_now = scoping_queue_now

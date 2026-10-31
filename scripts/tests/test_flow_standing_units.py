@@ -2,9 +2,9 @@
 """t1206 -- every standing process this repository ships is named on the Flow chart.
 
 The hourly check (scripts/check_workspace.py:1726-1755, `check_flow_record`) failed at
-2026-10-14T22:04:44Z on 708ab41f with one finding: `auditor-scoping.service`. That unit is
-shipped in this repository (deploy/systemd/auditor-scoping.service, ExecStart=
-/home/user/ai-workspace/scripts/manager_queue.sh auditor -- the Auditor's second scoping
+2026-10-14T22:04:44Z on 708ab41f with one finding: `scoping-queue@auditor.service`. That unit is
+shipped in this repository (deploy/systemd/scoping-queue@auditor.service, ExecStart=
+/home/user/ai-workspace/scripts/scoping_queue.sh auditor -- the Auditor's second scoping
 loop, t1085) and nothing in projects/local-inference/models/FLOW.json names it. FLOW.json is
 the file scripts/check_workspace.py reads as the system of record (Jas, 2026-10-01: "any
 permanent script must be represented in the flowchart").
@@ -59,10 +59,10 @@ def test_the_auditor_scoping_unit_is_named_on_the_chart():
     assert AUDITOR in text, (
         f"{AUDITOR}.service is shipped by this repository "
         f"({(UNITS / (AUDITOR + '.service')).relative_to(ROOT)}) and runs "
-        f"scripts/manager_queue.sh auditor, but "
+        f"scripts/scoping_queue.sh auditor, but "
         f"{FLOW.relative_to(ROOT)} does not name it. Put it on the chart -- the entry the "
         f"chart already carries for the sibling loop is the shape to mirror "
-        f"(projects/local-inference/models/FLOW.json:1603, \"unit\": \"manager-queue.service\").")
+        f"(projects/local-inference/models/FLOW.json:1603, \"unit\": \"scoping-queue@manager.service\").")
 
 
 def test_every_shipped_unit_is_named_on_the_chart():

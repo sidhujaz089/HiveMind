@@ -12,7 +12,7 @@ Jas, 2026-10-07, on this task: "I want the MCP connection to let chat make revie
 for me. I think they just need to be able to be marked as done and they go away. Chat
 should also be able to mark them as done in case I tell chat what I reviewed." That
 REVERSES rule 5 of the task body (no self-closing), which the first scope of this task
-(workspace/run-logs/manager-queue/out/t715.md) pinned the other way. This file is the
+(workspace/run-logs/scoping-queue/out/t715.md) pinned the other way. This file is the
 corrected contract: a chat caller may close, every other model caller may not.
 '''
 import importlib.util

@@ -41,7 +41,7 @@ def _fake(zone):
         if c[:2] == ['crontab', '-l']:
             return _Res('*/5 * * * * python3 scripts/heartbeat.py\n')
         if c[:3] == ['systemctl', '--user', 'list-unit-files']:
-            return _Res('manager-queue.service enabled enabled\n')
+            return _Res('scoping-queue@manager.service enabled enabled\n')
         if c[:2] == ['systemctl', 'list-unit-files']:
             return _Res('')
         if c[:2] == ['timedatectl', 'show']:
@@ -84,7 +84,7 @@ check('  and it is the shape box_clock returns',
       and {'timezone', 'utc_offset_minutes'} <= set(snap.get('clock', {})))
 check('  cron and units are recorded exactly as today (the census still works)',
       snap.get('cron') == ['*/5 * * * * python3 scripts/heartbeat.py']
-      and 'user:manager-queue.service' in snap.get('units', {}))
+      and 'user:scoping-queue@manager.service' in snap.get('units', {}))
 
 shifted = dict(snap, clock={'timezone': 'America/Edmonton', 'utc_offset_minutes': WANT + 60})
 try:

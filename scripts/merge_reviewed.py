@@ -334,10 +334,27 @@ def _move(new, paths):
     # the box kept running the old code. The lock exists during every commit in this repository, which makes that
     # repeatable rather than rare. A checkout of `new` does not need main to have moved, so a lock now refuses
     # with the ref untouched instead of desyncing it silently.
-    rc, out, err = git("checkout", new, "--", *paths)
+    # A MERGE THAT DELETES A FILE COULD NOT LAND AT ALL UNTIL NOW (2026-10-30). `git checkout <new> -- <paths>` cannot
+    # sync a path that does not exist in `new`: it fails with "pathspec ... did not match", so any branch that removes a
+    # file was refused at the last step. The rename of two retired units hit exactly this. A deleted path is not synced,
+    # it is REMOVED from the live tree, and the two cases are separated here rather than hoped about.
+    alive = [q for q in paths if git("cat-file", "-e", f"{new}:{q}")[0] == 0]
+    gone = [q for q in paths if q not in alive]
+    if alive:
+        rc, out, err = git("checkout", new, "--", *alive)
+    else:
+        rc, out, err = 0, "", ""
     if rc:
         raise SystemExit("merge_reviewed: the live checkout could not be synced with the merge, so main was NOT "
-                         "moved. Paths:\n  " + "\n  ".join(paths) + f"\n{out}\n{err}")
+                         "moved. Paths:\n  " + "\n  ".join(alive) + f"\n{out}\n{err}")
+    for q in gone:
+        target = REPO / q
+        try:
+            if target.exists():
+                target.unlink()
+                print(f"  removed from the live tree (the merge deletes it): {q}")
+        except OSError as e:                                        # noqa: BLE001 -- said, not swallowed
+            print(f"  NOTE: could not remove {q} from the live tree ({type(e).__name__}: {e})")
     rc, out, err = git("update-ref", "-m", f"merge_reviewed: main to {new}", "refs/heads/main", new, old)
     if rc:
         git("checkout", "HEAD", "--", *paths)      # the ref did not move, so put the live tree back where it was

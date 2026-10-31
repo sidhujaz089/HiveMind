@@ -186,13 +186,36 @@ fi
 # Only where the helper exists: test_precommit_record_sweep runs this hook in throwaway repos
 # without it, and went red the moment this section landed (2026-10-02).
 if [ -f "$(dirname "$0")/../related_tests.py" ] && git diff --cached --name-only | grep -qE '^(scripts|projects)/.*\.py$'; then
-    relout=$(timeout 900 python3 "$(dirname "$0")/../related_tests.py" 2>&1)
-    if [ $? -ne 0 ]; then
+    # THE CAP COMES FROM JAS'S SETTING, THROUGH A FILE ITS OWN SUITE EXECUTES (2026-10-31, Claude's review).
+    # 900 arrived in 1007505b9 with no derivation and is SMALLER than the work it bounds: related_tests.py caps each
+    # SUITE at 300 s, so 300 x N passes 900 the moment a few suites are slow -- a cold gate over 97 suites needed over
+    # twenty minutes on 2026-10-30 and this hook killed it, then printed "a staged script turns a suite that uses it
+    # red" for a gate that had not finished. Jas wants the number adjustable from the Hub, so it is a setting; and the
+    # suite asserts the VALUE rather than the text, because an earlier version asserted 'echo 1800' in this file while
+    # the hook could not read the setting at all.
+    . "$(dirname "$0")/../gate_cap.sh" "$(dirname "$0")/.."
+    _gate_start=$(date +%s)
+    relout=$(timeout "$GATE_CAP" python3 "$(dirname "$0")/../related_tests.py" 2>&1)
+    rc=$?
+    _gate_elapsed=$(( $(date +%s) - _gate_start ))
+    # SAID, NOT SWALLOWED: `|| true` on this line once made a broken recorder look like a clean run.
+    python3 "$(dirname "$0")/../gate_settings.py" record "$_gate_elapsed" "$rc" hook \
+      || echo "  NOTE: the gate run was NOT recorded (${_gate_elapsed}s, rc ${rc})" >&2
+    if [ "$rc" -ne 0 ]; then
         landing_row "t650b:related_tests" "$(printf '%s\n' "$relout" | sed -n 's/^  RED: //p')"
-        fail "a staged script turns a suite that uses it red -- every coder build would refuse." \
-             "$relout" \
-             "" \
-             "Fix the code or the suite. Rerun: python3 scripts/related_tests.py"
+        if [ "$rc" -eq 124 ]; then
+            # A GATE THAT DID NOT FINISH IS NOT A RED SUITE. Saying otherwise sent me round four close-outs looking
+            # for a suite that was never red, with an EMPTY red list as the only clue.
+            fail "the related-tests gate did not finish in ${GATE_CAP} s -- NO suite is called red (elapsed ${_gate_elapsed}s)." \
+                 "$relout" \
+                 "" \
+                 "This is a TIMEOUT (rc 124), not a verdict. Run it by hand: python3 scripts/related_tests.py"
+        else
+            fail "a staged script turns a suite that uses it red -- every coder build would refuse." \
+                 "$relout" \
+                 "" \
+                 "Fix the code or the suite. Rerun: python3 scripts/related_tests.py"
+        fi
     fi
 fi
 

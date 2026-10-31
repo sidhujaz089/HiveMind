@@ -73,12 +73,12 @@ def fake_run(user_units, system_units, cron_lines):
 
 
 def test_snapshot_enumerates_system_scope():
-    run = fake_run(["manager-queue.service"], ["ollama.service", "ssh.service"],
+    run = fake_run(["scoping-queue@manager.service"], ["ollama.service", "ssh.service"],
                    ["*/10 * * * * python3 scripts/dispatch_loop.py"])
     s = P.snapshot(run=run)
     check("snapshot() enumerates SYSTEM-scope enabled units -- the ollama.service blind spot",
           {"system:ollama.service", "system:ssh.service"} <= set(s["units"]))
-    check("  and tags user-scope units with their scope", "user:manager-queue.service" in s["units"])
+    check("  and tags user-scope units with their scope", "user:scoping-queue@manager.service" in s["units"])
     check("  and every item carries a scope tag (no un-tagged key leaks into the census)",
           all(u.split(":", 1)[0] in ("user", "system") for u in s["units"]))
     check("  and keeps the cron lines it has always kept",
@@ -86,9 +86,9 @@ def test_snapshot_enumerates_system_scope():
 
 
 def test_record_tags_scope_and_names_it_off_chart():
-    prev = {"cron": [], "units": {"user:manager-queue.service": True}}
-    new = {"cron": [], "units": {"user:manager-queue.service": True, "system:ollama.service": False}}
-    row = P.record(new, prev=prev, flow_text=chart("manager-queue.service"), write=False)
+    prev = {"cron": [], "units": {"user:scoping-queue@manager.service": True}}
+    new = {"cron": [], "units": {"user:scoping-queue@manager.service": True, "system:ollama.service": False}}
+    row = P.record(new, prev=prev, flow_text=chart("scoping-queue@manager.service"), write=False)
     check("an added system unit is recorded with its scope",
           bool(row) and "system:ollama.service" in row["added"])
     check("  and is named off_chart while services[] has no ollama.service",
@@ -122,13 +122,13 @@ def test_t643_recorder_behaviour_is_kept():
     # recorder fails here. flow_text is t643's non-JSON pseudo-chart -- coverage must not require JSON.
     flow = '"dispatch_loop" "manager-queue" "nas-backup"'
     base = {"cron": ["*/10 * * * * python3 scripts/dispatch_loop.py"],
-            "units": {"manager-queue.service": True}}
+            "units": {"scoping-queue@manager.service": True}}
     check("the first snapshot is a baseline, not a change",
           P.record(base, prev=None, flow_text=flow, write=False) is None)
     check("no change, no row",
           P.record(base, prev=base, flow_text=flow, write=False) is None)
     new = {"cron": base["cron"] + ["*/15 * * * * bash scripts/timer-gemma.sh"],
-           "units": {"manager-queue.service": True, "nas-backup.timer": True}}
+           "units": {"scoping-queue@manager.service": True, "nas-backup.timer": True}}
     row = P.record(new, prev=base, flow_text=flow, write=False)
     check("an added cron line and unit are recorded",
           bool(row) and row["added"] == ["cron: */15 * * * * bash scripts/timer-gemma.sh",
@@ -144,8 +144,8 @@ def test_t643_recorder_behaviour_is_kept():
 def test_an_empty_census_is_not_a_verdict():
     s = P.snapshot(run=fake_run([], [], []))
     check("a box with nothing standing gives an empty unit population", s["units"] == {})
-    row = P.record(s, prev={"cron": [], "units": {"user:manager-queue.service": True}},
-                   flow_text=chart("manager-queue.service"), write=False)
+    row = P.record(s, prev={"cron": [], "units": {"user:scoping-queue@manager.service": True}},
+                   flow_text=chart("scoping-queue@manager.service"), write=False)
     check("record() refuses to certify a census over an empty unit population", row is None)
 
 

@@ -7,7 +7,7 @@ an oracle whose every assert is a shape/presence form clears the check the insta
 carries a raise inside a helper that pins nothing. The t658 scope (model swift) was flagged
 by this check at 2026-10-07T11:32:49Z (workspace/tasks/t718--scope-rca-oracle-weak.md:28);
 the answer that replaced it clears the check with a raise inside a JSON-decode helper and no
-behavioural assertion in any test body (workspace/run-logs/manager-queue/out/t658.md:53-62).
+behavioural assertion in any test body (workspace/run-logs/scoping-queue/out/t658.md:53-62).
 
 Each test asserts the value _shape_only RETURNS for a source that differs from its neighbour
 only in WHERE the failure-raising statement sits: a value consumed here, not a shape. The

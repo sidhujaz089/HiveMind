@@ -35,7 +35,7 @@ def task(repo, n, needs, sub=""):
 def main():
     with tempfile.TemporaryDirectory() as tmp:
         repo = Path(tmp)
-        out = repo / "workspace" / "run-logs" / "manager-queue" / "out"
+        out = repo / "workspace" / "run-logs" / "scoping-queue" / "out"
         out.mkdir(parents=True)
         for n in (101, 102, 103, 104):
             (out / f"t{n}.md").write_text(ANSWER.format(n=n))

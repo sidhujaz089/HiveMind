@@ -14,7 +14,7 @@ the two end-to-end cases fail because lint reports no brief-wrong finding. GREEN
 calls the new function: the t719 text is flagged with an evidence line carrying both numbers, and
 a brief whose example clears its bar is not flagged.
 
-The fixture text is copied from the real artefact: workspace/run-logs/manager-queue/out/t719.md
+The fixture text is copied from the real artefact: workspace/run-logs/scoping-queue/out/t719.md
 lines 198 and 199, the implementation brief's single_change and what_is_wrong. Quote style around
 dict keys is normalised to single quotes -- the check reads digits, operators and fractions, not
 quote style. No subprocess, no urlopen, no model call, no live server, nothing left running, no

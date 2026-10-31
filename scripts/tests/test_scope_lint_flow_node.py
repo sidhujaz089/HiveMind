@@ -2,7 +2,7 @@
 """t1207 -- a brief that creates standing behaviour must name its Flow node.
 
 RCA workspace/rca/check-b06506c7eded.md: commit 708ab41f (2026-10-14 21:46Z) armed
-auditor-scoping.service, registered the scripts and the role, and wrote nothing to the Flow
+scoping-queue@auditor.service, registered the scripts and the role, and wrote nothing to the Flow
 chart; the hourly check "Every standing process is on the Flow chart" went red 20 minutes
 later. scope_lint already refuses an unregistered edit to a standing-rule DOC
 (standing_rule_findings, scripts/scope_lint.py:213, t768). Nothing on that path speaks about
@@ -32,7 +32,7 @@ import scope_lint
 CHART_IDS = ("scoping", "manager-queue")   # the ids placed in the throwaway chart below
 PHANTOM = "auditor-scoping-loop"          # a plausible node id that is NOT in that chart
 
-UNIT = "deploy/systemd/auditor-scoping.service"
+UNIT = "deploy/systemd/scoping-queue@auditor.service"
 TIMER = "deploy/systemd/night-queue.timer"
 HOOK = "scripts/hooks/pre-commit"
 REGISTRY = "scripts/library.json"

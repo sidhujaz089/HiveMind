@@ -98,6 +98,14 @@ build ledger    scripts/tests/test_runledger_two_runs.py  scripts/runledger.py
 draft () {   # draft <name> <output-path>
     local name=$1 out=$2
     [ -s "$out" ] && { row skipped "$name: a draft already exists at $out"; return 0; }
+    # THE PAUSE HOLDS THIS TOO (Jas, 2026-10-30: "when I press pause it stops every model from working on tasks").
+    # This loop starts the same model runner the scoping queue does, and it never asked: pressing pause on both
+    # devices left it drafting oracles. must_hold answers for the production screen, for ALL devices, and for this
+    # work's device.
+    if ! python3 -c "import sys;sys.path.insert(0,'scripts');import scheduler_commands as s;ok,why=s.must_hold();print(why) if ok else None;sys.exit(0 if ok else 1)"; then
+      row skipped "$name: paused"
+      return 0
+    fi
     until [ ! -f workspace/scoping-lease.json ]; do sleep 30; done
     timeout 5400 python3 scripts/ask_q16.py --prompt "$BRIEFS/brief-oracle-$name.txt" \
         --out "$out" --budget 16000 --max-escalations 1 --max-rounds 8 --timeout 5400 \

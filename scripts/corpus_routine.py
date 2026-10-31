@@ -28,7 +28,7 @@ REPO = Path(__file__).resolve().parent.parent
 # was updated and this was not, so `NAS.is_dir()` was False on every run and session_end
 # printed "[skip] backup -- the NAS is not mounted. Nothing was copied." That reads like a
 # machine without a NAS attached. The NAS was mounted, reachable and writable the whole time:
-# 192.168.1.81:/nfs on /mnt/nas, 334 GB free, with nightly bundles landing in it from the
+# 192.0.2.81:/nfs on /mnt/nas, 334 GB free, with nightly bundles landing in it from the
 # OTHER script. So the session-end backup was a silent no-op, and the message explaining it
 # away was the reason nobody looked. Keep this equal to DEST in scripts/nas_backup.sh.
 NAS = Path("/mnt/nas/Public/HiveMind")

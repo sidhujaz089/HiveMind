@@ -4729,8 +4729,13 @@ class Checker:
             # committed. What gets built from them is checked where it lands.
             # RCA reports join them (2026-10-07): since Swift took the rca task, each report proposes
             # its fix by naming the check or test to build -- 26 such names in the first afternoon.
-            if rel.startswith(("workspace/manager-answers/", "workspace/run-logs/manager-queue/",
-                               "workspace/rca/")):
+            # AND THE OLD QUEUE DIRECTORY, WHICH IS STILL TRACKED (2026-10-31). The loop was renamed to
+            # run-logs/scoping-queue and the exclusion followed it, but the files under run-logs/scoping-queue/out/
+            # are still in git -- 1,235 of them -- and they are the SAME kind of record: model answers proposing files
+            # that do not exist (the technical interviews are full of them; see the RCA of 2026-10-31). Both names are
+            # excluded until the directory migration lands and the runtime output is untracked for good.
+            if rel.startswith(("workspace/manager-answers/", "workspace/run-logs/scoping-queue/",
+                               "workspace/run-logs/scoping-queue/", "workspace/rca/")):
                 continue
             full = self.repo / rel
             if not full.is_file():

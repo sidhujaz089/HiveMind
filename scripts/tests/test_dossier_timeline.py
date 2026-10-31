@@ -42,8 +42,8 @@ def fixture(tmp):
     (w / 'tasks').mkdir(parents=True)
     (w / 'briefs').mkdir(parents=True)
     (w / 'task-sessions' / 't472').mkdir(parents=True)
-    (w / 'run-logs' / 'manager-queue' / 'out').mkdir(parents=True)
-    (w / 'run-logs' / 'manager-queue' / 'in').mkdir(parents=True)
+    (w / 'run-logs' / 'scoping-queue' / 'out').mkdir(parents=True)
+    (w / 'run-logs' / 'scoping-queue' / 'in').mkdir(parents=True)
     (tmp / 'scripts').mkdir(parents=True)
     (w / 'tasks' / 't472--flow-audit-trail.md').write_text(
         '---\ntitle: Flow audit trail\n---\n\n## Notes\n\n**2026-10-05 · jas** — (Jas - Human) .\n',
@@ -52,8 +52,8 @@ def fixture(tmp):
         'TASK: t472\nFILE: scripts/dossier.py\n', encoding='utf-8')
     (w / 'task-sessions' / 't472' / '20261005T000000Z-swift.jsonl').write_text(
         json.dumps({'at': '2026-10-05T00:00:00Z', 'type': 'user'}) + '\n', encoding='utf-8')
-    (w / 'run-logs' / 'manager-queue' / 'out' / 't472.md').write_text('(c) SCOPE\n', encoding='utf-8')
-    (w / 'run-logs' / 'manager-queue' / 'in' / 't472.txt').write_text('scope this\n', encoding='utf-8')
+    (w / 'run-logs' / 'scoping-queue' / 'out' / 't472.md').write_text('(c) SCOPE\n', encoding='utf-8')
+    (w / 'run-logs' / 'scoping-queue' / 'in' / 't472.txt').write_text('scope this\n', encoding='utf-8')
     # The real autonomy_loop shape: name|brief|target|oracle. The oracle is a file that does NOT
     # exist in this tree, so build() emits an `oracle` artifact with no path -- the case the task's
     # own limit is about: a source that is gone is shown as 'input not kept', never skipped.

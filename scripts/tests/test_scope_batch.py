@@ -67,7 +67,7 @@ off = Path(tempfile.mkdtemp())
 report("batching is on by default", sb.batching_on(off), True)
 (off / "BATCH_OFF").write_text("off\n")
 report("BATCH_OFF turns it off", sb.batching_on(off), False)
-sh = (ROOT / "scripts" / "manager_queue.sh").read_text(encoding="utf-8")
+sh = (ROOT / "scripts" / "scoping_queue.sh").read_text(encoding="utf-8")
 report("the queue runs batches through scope_batch and claim-batch",
        all(s in sh for s in ("scope_batch.py pick", "claim-batch", "run_batch", "scope_batch.py split")), True)
 print(f"\n{PASSED} passed, {FAILED} failed")

@@ -127,7 +127,7 @@ def main():
             # what the model said, and the citation audit (t413) is where model claims get
             # checked. A figure Claude carries into a doc from one of these is still scanned.
             rel = f.relative_to(REPO).as_posix()
-            if rel.startswith(("workspace/run-logs/manager-queue/", "workspace/manager-answers/")):
+            if rel.startswith(("workspace/run-logs/scoping-queue/", "workspace/manager-answers/")):
                 continue
             scanned += 1
             text = f.read_text(encoding="utf-8", errors="replace")

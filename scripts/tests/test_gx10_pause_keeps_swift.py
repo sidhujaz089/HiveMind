@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory() as td:
     SC.PAUSE_FLAG = Path(td) / "scheduler-paused.enabled"
     SC.DEVICE_PAUSE_LEDGER = Path(td) / "device-pause.jsonl"
     calls = []
-    deps = "production.target\n  auditor-scoping.service\n  manager-queue.service\n  swift.service\n"
+    deps = "production.target\n  scoping-queue@auditor.service\n  scoping-queue@manager.service\n  swift.service\n"
 
     def fake_run(cmd, **kw):
         calls.append(list(cmd))
@@ -57,8 +57,8 @@ with tempfile.TemporaryDirectory() as td:
         stops = [c for c in calls if "stop" in c]
         flat = [x for c in stops for x in c]
         check("a person's pause succeeds", ok, True)
-        check("...stops the Manager queue", "manager-queue.service" in flat, True)
-        check("...stops the Auditor's scoping", "auditor-scoping.service" in flat, True)
+        check("...stops the Manager queue", "scoping-queue@manager.service" in flat, True)
+        check("...stops the Auditor's scoping", "scoping-queue@auditor.service" in flat, True)
         check("...does NOT stop Swift", "swift.service" in flat, False)
         check("...does NOT stop the target (that would stop Swift too)", "production.target" in flat, False)
         check("...and pauses the GX10", "gx10" in SC.paused_devices(), True)

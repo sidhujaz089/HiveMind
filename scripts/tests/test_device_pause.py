@@ -90,7 +90,7 @@ with tempfile.TemporaryDirectory() as td:
     units_stopped = []
     _real_run = subprocess.run
     subprocess.run = lambda cmd, *a, **k: (units_stopped.append(list(cmd)), subprocess.CompletedProcess(
-        cmd, 0, "production.target\nmanager-queue.service\nswift.service\n" if "list-dependencies" in cmd else "",
+        cmd, 0, "production.target\nscoping-queue@manager.service\nswift.service\n" if "list-dependencies" in cmd else "",
         ""))[1]
     SC.pause_device("thinkpad", "jas", "eGPU unplugged")
     try:
@@ -98,7 +98,7 @@ with tempfile.TemporaryDirectory() as td:
     finally:
         subprocess.run = _real_run
     check("Pause GX10 stops the units except Swift, through the fake",
-          [c for c in units_stopped if "stop" in c], [["systemctl", "--user", "--no-block", "stop", "manager-queue.service"]])
+          [c for c in units_stopped if "stop" in c], [["systemctl", "--user", "--no-block", "stop", "scoping-queue@manager.service"]])
     check("Pause GX10 pauses only the GX10 (and the ThinkPad keeps its own)", sorted(SC.paused_devices()), ["gx10", "thinkpad"])
     SC.gx10_on()
     check("Resume GX10 leaves the ThinkPad paused", sorted(SC.paused_devices()), ["thinkpad"])

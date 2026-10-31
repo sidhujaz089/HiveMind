@@ -3806,6 +3806,110 @@
     "merge_review"
    ],
    "what": "The suite for close_landed: green closes; red, no test, freeze-only and refused do not; move_main starts it."
+  },
+  {
+   "script": "scripts/script_settings.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "Describes a script from its own comments -- purpose, each function's one-line summary, and the module constants that hold literals -- so a page can explain a script and offer its knobs without a second hand-written description",
+   "runs": "on-demand"
+  },
+  {
+   "script": "scripts/tests/test_script_settings.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The suite for the script description data layer: purpose from the docstring, function summaries from docstrings or the comment above, literal constants as knobs, an expression is not a knob, non-Python is skipped, a missing file is empty",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/set_knob.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "Sets one literal knob in a script by editing its own literal line, preserving comments and quoting, refusing an expression or a wrong-typed value, and showing the diff first",
+   "runs": "on-demand"
+  },
+  {
+   "script": "scripts/tests/test_set_knob.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The suite for the knob writer: a dry run writes nothing, a real run changes only the literal, the comment above and the sibling lines survive, an expression is refused, an unknown name is refused, and a wrong-typed value is refused",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/tests/test_script_page.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The suite for the Scripts tab's per-script view: the page reaches script_settings, shows purpose, a knob with its value and explanation, and a function name, for Python and shell scripts, and stays read-only",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/tests/test_knob_box.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The suite for the Scripts tab's knob boxes: a set is written and read back from the file, an unknown knob and a wrong-typed value are refused, the Hub's own code and a traversal are refused, and the page carries the form and the restart note",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/tests/test_every_producer_asks.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The check that every place starting a model asks the pause, from a curated registry: a new spawn fails, a stale entry fails, an observer needs a reason, and each producer must call must_hold",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/tests/test_rename_left_no_broken_caller.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "Fails if a renamed who_works function loses an old name that a guarded caller still uses, and if any who_works.<name> call site does not resolve",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/scoping_queue.sh",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The scoping loop: works the top of the queue as the scoper for this instance, one task at a time, and asks the pause before every model call",
+   "runs": "service"
+  },
+  {
+   "script": "scripts/gate_cap.sh",
+   "serves": [
+    "tick_chores"
+   ],
+   "what": "Resolves the pre-commit gate's wall-clock cap from Jas's setting, falling back to 1800 s and SAYING so, in one file the hook and its suite both execute",
+   "runs": "on-demand"
+  },
+  {
+   "script": "scripts/tests/test_gate_timeout_message.py",
+   "serves": [
+    "tick_chores"
+   ],
+   "what": "The behavioural suite for the gate cap: runs the resolver and asserts the number it yields for a saved setting, no setting and a corrupt one, plus that the hook uses $GATE_CAP and names a timeout as a timeout",
+   "runs": "library"
+  },
+  {
+   "script": "scripts/migrate_queue_dir.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "Moves the scoping queue's state directory to its role-neutral name, refusing when both exist, neither exists, any instance systemd reports is running, or a copy would be needed",
+   "runs": "on-demand"
+  },
+  {
+   "script": "scripts/tests/test_queue_dir_migration.py",
+   "serves": [
+    "supervision"
+   ],
+   "what": "The suite for the queue-directory migration and write_grant's no-mkdir rule: neither, both, running, a real move with its state, and the dispatcher naming the old directory",
+   "runs": "library"
   }
  ],
  "procedures": [

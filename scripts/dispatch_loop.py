@@ -1129,7 +1129,7 @@ def scoping_waiting(queue_dir=None, now=None, upcoming=None):
     progress log written in the last MANAGER_QUEUE_ALIVE_S (it writes on every loop, even when idle
     or yielding). A long scope writes nothing for an hour -- then this says no, and a job that starts
     meets the lease the scope holds and yields, as before."""
-    q = Path(queue_dir or (REPO / "workspace" / "run-logs" / "manager-queue"))
+    q = Path(queue_dir or (REPO / "workspace" / "run-logs" / "scoping-queue"))
     now = now or time.time()
     log = q / "progress.log"
     if (q / "STOP").exists() or not log.exists() or now - log.stat().st_mtime > MANAGER_QUEUE_ALIVE_S:
@@ -1504,6 +1504,17 @@ def model_slots(model):
             if model not in _MEASURED_SLOTS:
                 _MEASURED_SLOTS[model] = _cm.inference_lanes()
             n, why = _MEASURED_SLOTS[model]
+            # THE SERIAL CAP APPLIES TO THE MEASURED NUMBER TOO (2026-10-30). inference_lanes() comes from a curve
+            # measured on the box's parallel engine, so handing 4 lanes to a serial-architecture model is the queueing
+            # and the 4x timeouts the serial rule exists to prevent. The cap is about the MODEL, not about who declared
+            # the capacity, so it is applied last -- the same rule modellease.slots now applies to the engine's number.
+            try:
+                import modellease as _ml
+                if _ml.is_serial(model) and int(n) > 1:
+                    print(f"  capacity: {model} runs 1 lane -- serial architecture caps the measured {n}")
+                    return 1
+            except Exception as e:                                  # noqa: BLE001 -- said, not swallowed
+                print(f"  NOTE: serial-arch check unreadable ({type(e).__name__}: {e}); the measured number stands")
             print(f"  capacity: {model} runs {n} lane(s) -- {why}")
             return max(1, int(n))
     except Exception as e:                                          # noqa: BLE001 -- said, not swallowed
@@ -2677,7 +2688,7 @@ def senior_queue(chunks, red_of, history):
     return todo, held
 
 
-MQ = REPO / "workspace" / "run-logs" / "manager-queue"
+MQ = REPO / "workspace" / "run-logs" / "scoping-queue"
 
 
 SCOPE2_FRESH_S = 600
@@ -2747,7 +2758,7 @@ def scoping_on_station(history, mq=None):
         import manager_next
         import who_works
         out["rankable"] = (not out["running"] and bool(manager_next.upcoming(1)[0])
-                           and not who_works.manager_queue_now())
+                           and not who_works.scoping_queue_now())
     except Exception as e:                                          # noqa: BLE001 -- said, not swallowed
         print(f"  NOTE: manager queue unreadable ({type(e).__name__}: {e}); scoping not ranked")
     if not out["ours"]:
@@ -3971,7 +3982,7 @@ def tick(dry_run=False, models=None):
         _yk, _st = task_routing.yield_kinds(ROUTING), station_roles()
         behind = [i for i in [q for q, _ in queued] + p_starts
                   if i.get("kind") in _yk or i.get("role") in _st]
-        flag = REPO / "workspace" / "run-logs" / "manager-queue" / "YIELD"
+        flag = REPO / "workspace" / "run-logs" / "scoping-queue" / "YIELD"
         # NO YIELD UNDER THE ROTATION (2026-10-08): Scoping now holds only the lanes it was granted,
         # so pausing it for higher work would starve it twice. The flag is only ever cleared.
         behind = []

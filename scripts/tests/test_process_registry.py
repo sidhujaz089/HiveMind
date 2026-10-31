@@ -15,12 +15,12 @@ def check(name, cond):
 # not a first one there, this suite went red only in the sandbox, and every build refused to start.
 import tempfile as _tf
 P.SNAP = Path(_tf.mkdtemp()) / "process-registry.json"
-base = {"cron": ["*/10 * * * * python3 scripts/dispatch_loop.py"], "units": {"manager-queue.service": True}}
+base = {"cron": ["*/10 * * * * python3 scripts/dispatch_loop.py"], "units": {"scoping-queue@manager.service": True}}
 flow = '"dispatch_loop" "manager-queue" "nas-backup"'
 check("the first snapshot is a baseline, not a change", P.record(base, prev=None, flow_text=flow, write=False) is None)
 check("no change, no row", P.record(base, prev=base, flow_text=flow, write=False) is None)
 new = {"cron": base["cron"] + ["*/15 * * * * bash scripts/timer-gemma.sh"],
-       "units": {"manager-queue.service": True, "nas-backup.timer": True}}
+       "units": {"scoping-queue@manager.service": True, "nas-backup.timer": True}}
 row = P.record(new, prev=base, flow_text=flow, write=False)
 check("an added cron line and unit are recorded", row and row["added"] == ["cron: */15 * * * * bash scripts/timer-gemma.sh", "nas-backup.timer"])
 check("  and the off-chart one is named", row and row["off_chart"] == ["cron: */15 * * * * bash scripts/timer-gemma.sh"])

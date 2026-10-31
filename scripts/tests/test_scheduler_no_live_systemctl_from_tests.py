@@ -4,8 +4,8 @@
 WHY. test_device_pause.py faked SC._systemctl, but since b9cccaaca a person's gx10_off stops the
 production units through its own subprocess.run, which nothing faked. Every run of that suite --
 directly, or inside a coder.py sandbox baseline (test_coder_bad_shape, _branch_delivery,
-_branch_not_clobbered all build one) -- ran `systemctl --user --no-block stop manager-queue.service
-auditor-scoping.service` on the live box. The hourly sweep did that every few minutes on 2026-10-23
+_branch_not_clobbered all build one) -- ran `systemctl --user --no-block stop scoping-queue@manager.service
+scoping-queue@auditor.service` on the live box. The hourly sweep did that every few minutes on 2026-10-23
 (13:24, 14:22, 14:26, 14:29, 14:34 MDT) and the Manager and Auditor never stayed up.
 
 THE RULE: from a process whose argv[0] is a test, scheduler_commands refuses to run the real
@@ -39,7 +39,7 @@ with tempfile.TemporaryDirectory() as td:
     fake.parent.mkdir()
     fake.write_text("#!/bin/sh\necho \"$*\" >> " + str(log) + "\n"
                     "case \"$*\" in *list-dependencies*) printf 'production.target\\n"
-                    "manager-queue.service\\nswift.service\\n';; esac\nexit 0\n")
+                    "scoping-queue@manager.service\\nswift.service\\n';; esac\nexit 0\n")
     fake.chmod(0o755)
     os.environ["PATH"] = f"{fake.parent}{os.pathsep}{os.environ['PATH']}"
 
@@ -72,7 +72,7 @@ with tempfile.TemporaryDirectory() as td:
 
     def fake_run(cmd, *a, **k):
         seen.append(list(cmd))
-        out = "production.target\nmanager-queue.service\nswift.service\n" if "list-dependencies" in cmd else ""
+        out = "production.target\nscoping-queue@manager.service\nswift.service\n" if "list-dependencies" in cmd else ""
         return subprocess.CompletedProcess(cmd, 0, out, "")
     subprocess.run = fake_run
     try:

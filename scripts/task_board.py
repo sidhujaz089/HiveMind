@@ -58,7 +58,7 @@ def _step(text):
 def manager_stages(repo=REPO):
     """{task: (stage, answer path)} from the manager's answers (latest wins)."""
     out = {}
-    dirs = [repo / "workspace" / "manager-answers", repo / "workspace" / "run-logs" / "manager-queue" / "out"]
+    dirs = [repo / "workspace" / "manager-answers", repo / "workspace" / "run-logs" / "scoping-queue" / "out"]
     files = []
     for d in dirs:
         if d.is_dir():
@@ -388,7 +388,7 @@ def board(repo=REPO, now=None):
 
 def _scope_live(repo, tid):
     import subprocess
-    if (repo / "workspace" / "run-logs" / "manager-queue" / "claims" / tid).exists():
+    if (repo / "workspace" / "run-logs" / "scoping-queue" / "claims" / tid).exists():
         return True
     r = subprocess.run(["git", "-C", str(repo), "rev-parse", "-q", "--verify", f"bridge/{tid}"],
                        capture_output=True, text=True, timeout=30)

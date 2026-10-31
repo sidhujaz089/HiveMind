@@ -1,13 +1,10 @@
 # Harness tasks for the cloud
 
+Refreshed 2026-10-31 from the origin repository's main. Tasks closed since the last export are gone; t296, t478, t645, t675 and t697 are DONE on their cloud/ branches and awaiting review, so do not redo them. t693 is back: projects/app-repo/feedback.py, the import it was blocked on, is now in the export.
+
 | Task | Title | Oracle |
 |---|---|---|
-| t296 | check_workspace still gates on the retired section census | test_t296_census_retired.py |
-| t478 | Scope RCA: oracle-gate | test_scope_lint_oracle_gate_enforced.py, test_scope_quality_task_link.py |
-| t645 | Gate review deliverables on an on-disk file, written each round | test_probe_deliverable.py |
-| t675 | Slim dispatch-loop.jsonl tick rows: write the full queue to a latest-tick file, keep count | (write one) |
 | t693 | Scheduler bar should say who paused the scheduler and why (audit s02; left for next sessio | test_scheduler_bar_pause_attribution.py |
-| t697 | Task-guard self-test (creates/deletes t692--guard-self-test-delete-me.md) races with a liv | (write one) |
 | t702 | coder.py: a repeat request for a file shown as a SYMBOL SLICE is served lines 1..260,000 a | test_coder_repeat_names_symbols.py |
 | t712 | Scope RCA: oracle-green | test_coder_serves_file_under_edit.py, test_scope_lint_evidence.py |
 | t713 | Scope RCA: oracle-crash | test_scope_lint_prose_pointer.py |
@@ -115,3 +112,11 @@
 | t9580 | The pre-commit gate cannot tell a RED suite from one that did not finish: rc 124 is report | (write one) |
 | t9581 | session_end needs a seconds-long preflight that reports every cheap blocker before the 10- | (write one) |
 | t9582 | Derive the pre-commit gate's timeout from close-out timings once the ledger has data (1800 | (write one) |
+
+## New since the last export (not vetted the same way -- write the oracle first, and stop if the task needs a live service)
+
+| Task | Title | Oracle |
+|---|---|---|
+| t9583 | Red on main: test_manager_outcomes.py | (write one) |
+| t9585 | Red on main: test_manager_outcomes.py | (write one) |
+| t9586 | Red on main: test_manager_outcomes.py | (write one) |

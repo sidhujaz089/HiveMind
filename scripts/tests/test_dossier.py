@@ -31,15 +31,15 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         r = Path(tmp)
         w = r / "workspace"
-        for d in ("tasks", "briefs", "run-logs/manager-queue/out", "run-logs/manager-queue/in", "task-sessions/t900",
+        for d in ("tasks", "briefs", "run-logs/scoping-queue/out", "run-logs/scoping-queue/in", "task-sessions/t900",
                   "skill-drafts", "task-queues/review_it/done"):
             (w / d).mkdir(parents=True)
         (r / "scripts" / "tests").mkdir(parents=True)
         (w / "tasks" / "t900--fix-the-thing.md").write_text(
             "---\nid: t900\ntitle: Fix the thing\n---\n\nIt is broken.\n\n## Notes\n\n"
             "**2026-09-30 · jas** — (Jas - Human) please\n\n**2026-09-30 · manager** — (Manager - q4) scoped\n")
-        (w / "run-logs/manager-queue/out/t900.md").write_text("x" * 50 + "\n(c) SCOPE\n" + "y" * 200)
-        (w / "run-logs/manager-queue/in/t900.txt").write_text("the prompt")
+        (w / "run-logs/scoping-queue/out/t900.md").write_text("x" * 50 + "\n(c) SCOPE\n" + "y" * 200)
+        (w / "run-logs/scoping-queue/in/t900.txt").write_text("the prompt")
         (w / "briefs/brief-p9-t900-fix.txt").write_text("TASK: t900\n\nONE change")
         (w / "briefs/brief-p8-other.txt").write_text("TASK: t901\n")
         (r / "scripts/autonomy_loop.sh").write_text(

@@ -44,11 +44,11 @@ P.LEDGER = _TMP / "process-changes.jsonl"
 # "system:<name>": bool}}, and a chart in FLOW.json's real shape (services[].name, scripts[]).
 # The values are deliberately all DIFFERENT (population 3, off-chart 1, three distinct scope
 # dicts) so an implementation that hardcodes one value cannot satisfy every assertion.
-FLOW = json.dumps({"services": [{"id": "svc", "name": "manager-queue.service"},
+FLOW = json.dumps({"services": [{"id": "svc", "name": "scoping-queue@manager.service"},
                                 {"id": "dl", "name": "dispatch_loop.py"}],
                    "scripts": ["scripts/dispatch_loop.py"]})
 POP = {"cron": ["*/10 * * * * python3 scripts/dispatch_loop.py"],
-       "units": {"user:manager-queue.service": True, "user:timer-gemma.timer": False}}
+       "units": {"user:scoping-queue@manager.service": True, "user:timer-gemma.timer": False}}
 POP2 = {"cron": POP["cron"], "units": dict(POP["units"], **{"user:chat-agent.timer": True})}
 GONE = "cron: */15 * * * * bash scripts/timer-gemma.sh"
 POP_ITEMS = list(POP["cron"]) + list(POP["units"])
@@ -103,7 +103,7 @@ def test_dead_collector_leaves_evidence():
 
 def test_scope_shape_change_reseeds_instead_of_mass_rows():
     reset()
-    prev_user = {"cron": [], "units": {"user:manager-queue.service": True, "user:timer-gemma.timer": True}}
+    prev_user = {"cron": [], "units": {"user:scoping-queue@manager.service": True, "user:timer-gemma.timer": True}}
     new_sys = {"cron": [], "units": {"system:ollama.service": False, "system:ssh.service": True,
                                      "system:docker.service": True}}
     P.record(snap=new_sys, prev=prev_user, flow_text=FLOW, write=True)

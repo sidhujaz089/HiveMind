@@ -2,16 +2,16 @@
 # The manager takes the TOP of QUEUE.md, one task at a time (Jas, 2026-09-24).
 # scripts/manager_next.py picks the task; a Claude-written prompt in custom/<task>-*.txt wins,
 # else scripts/manager_prompt.py writes the standard one. ask_q16 --task keeps the session.
-# Stop cleanly: touch workspace/run-logs/manager-queue/STOP
+# Stop cleanly: touch workspace/run-logs/scoping-queue/STOP
 # THE REPOSITORY IS THIS SCRIPT'S OWN PARENT, not a literal path (L1 review, 2026-10-29: it hard-coded
 # /home/user/ai-workspace twice, so a checkout anywhere else ran against the wrong tree).
 R=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-Q=$R/workspace/run-logs/manager-queue
+Q=$R/workspace/run-logs/scoping-queue
 # ONE LOOP PER SCOPING ROLE (Jas, 2026-10-14: "I want the auditor and Manager working together to clear
-# our backlog ... I just need to get them both scoping"). `manager_queue.sh auditor` is a second copy of
+# our backlog ... I just need to get them both scoping"). `scoping_queue.sh auditor` is a second copy of
 # this loop that scopes as the Auditor, on its own model and lanes (scoping_lanes.py target auditor). The
 # claims are shared, so two loops never scope the same task; each counts only its own workers.
-# THE SCOPING ROLE IS LOOKED UP, NOT ASSUMED (Jas, 2026-10-29: "manager_queue sounds like a hard coded role.
+# THE SCOPING ROLE IS LOOKED UP, NOT ASSUMED (Jas, 2026-10-29: "scoping_queue sounds like a hard coded role.
 # Please point that to a source of truth"). `SCOPER` names WHICH scoping loop this is -- the store decides
 # who that is: whoever lists the `scoping` task on the Models tab. Delete the Manager role and give Scoping to
 # a new one and this loop follows, with no edit here.
@@ -32,10 +32,10 @@ if [ -z "$SCOPER" ]; then
   if SCOPER=$(_store_scoper 2>&1); then
     SCOPER=$(printf '%s' "$SCOPER" | tr -d '[:space:]')
   else
-    echo "manager_queue: the role store could not be read -- falling back to 'manager'" >&2
+    echo "scoping_queue: the role store could not be read -- falling back to 'manager'" >&2
   fi
   if [ -z "$SCOPER" ]; then
-    echo "manager_queue: the role store names no scoping role -- falling back to 'manager'" >&2
+    echo "scoping_queue: the role store names no scoping role -- falling back to 'manager'" >&2
     SCOPER=manager
   fi
 fi
@@ -92,7 +92,7 @@ run_task() {
   [ -s "$Q/out/$t.md" ] && timeout 12000 python3 scripts/scope_gate.py "$Q/out/$t.md" --task "$t" \
     --model "$(python3 -c "import sys;sys.path.insert(0,'scripts');import roles;print(roles.tag('$SCOPER','manager'))")" \
     --role "$HIVEMIND_ROLE" >> "$Q/progress.log" 2>&1
-  python3 scripts/manager_note.py "$t" "workspace/run-logs/manager-queue/out/$t.md" >> "$Q/progress.log" 2>&1
+  python3 scripts/manager_note.py "$t" "workspace/run-logs/scoping-queue/out/$t.md" >> "$Q/progress.log" 2>&1
   # THE BRIDGE, AUTOMATIC (t323, p58): a valid chunks block becomes branch bridge/<task>; --lint
   # refuses a broken scope back to the manager, --freeze merges a passing one into main by the
   # gates (D-35 amended), --record scores every outcome. bridge_trigger's freeze runs under a lock,
@@ -132,7 +132,7 @@ run_batch() {
     [ -s "$Q/out/$t.md" ] && timeout 12000 python3 scripts/scope_gate.py "$Q/out/$t.md" --task "$t" \
       --model "$(python3 -c "import sys;sys.path.insert(0,'scripts');import roles;print(roles.tag('$SCOPER','manager'))")" \
       --role "$HIVEMIND_ROLE" >> "$Q/progress.log" 2>&1
-    python3 scripts/manager_note.py "$t" "workspace/run-logs/manager-queue/out/$t.md" >> "$Q/progress.log" 2>&1
+    python3 scripts/manager_note.py "$t" "workspace/run-logs/scoping-queue/out/$t.md" >> "$Q/progress.log" 2>&1
     timeout 1800 python3 scripts/bridge_trigger.py "$Q/out/$t.md" --task "$t" --model "$m" \
       --lint --freeze --record >> "$Q/progress.log" 2>&1
     echo "$(date -u +%H:%M:%SZ) BRIDGE $t rc=$? (batch $first)" >> "$Q/progress.log"
@@ -140,7 +140,7 @@ run_batch() {
 }
 
 while [ ! -f "$Q/STOP" ]; do
-  # THE ROLES TAB DECIDES WHO SCOPES (2026-10-20). manager-queue.service ran as "manager" whatever ROLES.json
+  # THE ROLES TAB DECIDES WHO SCOPES (2026-10-20). scoping-queue@manager.service ran as "manager" whatever ROLES.json
   # said, so the Manager scoped with no `scoping` on its list. A loop whose role does not list it idles.
   if ! python3 -c "import json,sys;d=json.load(open('projects/local-inference/models/ROLES.json'));sys.exit(0 if any(t.get('task')=='scoping' for t in d['roles'].get('$SCOPER',{}).get('tasks',[])) else 1)" 2>/dev/null; then
     echo "$(date -u +%H:%M:%SZ) IDLE the $SCOPER role does not list scoping on the Roles tab" >> "$Q/progress.log"

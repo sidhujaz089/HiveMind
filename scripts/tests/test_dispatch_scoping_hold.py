@@ -71,7 +71,7 @@ report("jobs on ANOTHER server running the same model do not fill this one",
                                  running=[{"model": "q4", "server_port": 11435}] * 3)[1]), 2)
 report("1 slot: everything still waits, as before",
        len(dl.hold_below_scoping(q4, store, waiting=True, slots=lambda m: 1)[1]), 5)
-# SCOPING ON THE SENIOR'S STATION (2026-10-03): manager_queue.sh runs on station 2 when the Senior's
+# SCOPING ON THE SENIOR'S STATION (2026-10-03): scoping_queue.sh runs on station 2 when the Senior's
 # list has Scoping above Preflight. Holding the main-server Manager's RCAs then held 30 for nothing.
 st3 = {"roles": {
     "manager": {"kind": "model", "tasks": [T("supervision"), T("scoping"), T("rca")]},

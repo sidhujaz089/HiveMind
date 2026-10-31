@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The standard manager prompt for one task: python3 scripts/manager_prompt.py t323
 
-Used by scripts/manager_queue.sh when Claude has not written a task-specific prompt. The task's
+Used by scripts/scoping_queue.sh when Claude has not written a task-specific prompt. The task's
 earlier sessions (any model) are prepended by ask_q16 --task, so this names the task and the job.
 """
 import re
@@ -243,7 +243,7 @@ def main(argv, repo=None):
         sys.path.insert(0, str(REPO / "scripts"))
         import skills
         # THE ROLE RUNNING THE QUEUE (2026-10-02): scoping runs on the Senior's station when its list
-        # ranks it there; manager_queue.sh exports HIVEMIND_ROLE. Unset = the Manager, as before.
+        # ranks it there; scoping_queue.sh exports HIVEMIND_ROLE. Unset = the Manager, as before.
         import os as _os
         out, _sk = skills.with_skills(out, "scoping", role=_os.environ.get("HIVEMIND_ROLE") or "manager",
                                       can_open=True)
@@ -323,7 +323,7 @@ def step_gaps(tid, root=None):
     steps are checked against the repository as it is NOW with the check scope_gate applies: missing
     steps and every stale `now` are listed, chunk by chunk. '' when there is nothing to say."""
     root = Path(root or REPO)
-    prev = root / "workspace" / "run-logs" / "manager-queue" / "out" / f"{tid}.md"
+    prev = root / "workspace" / "run-logs" / "scoping-queue" / "out" / f"{tid}.md"
     if not prev.is_file():
         return ""
     import bridge

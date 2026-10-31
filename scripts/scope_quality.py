@@ -41,7 +41,7 @@ REPO = Path(__file__).resolve().parent.parent
 LEDGER = REPO / "workspace" / "scope-quality.jsonl"
 DEFECTS = REPO / "workspace" / "scope-defects"
 SESSIONS = REPO / "workspace" / "task-sessions"
-ANSWERS = REPO / "workspace" / "run-logs" / "manager-queue" / "out"
+ANSWERS = REPO / "workspace" / "run-logs" / "scoping-queue" / "out"
 LOOP = REPO / "scripts" / "autonomy_loop.sh"
 BRIEFS = REPO / "workspace" / "briefs"
 

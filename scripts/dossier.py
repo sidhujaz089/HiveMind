@@ -109,7 +109,7 @@ def chunks_of(tid):
 
 def scope(tid):
     out = []
-    q = W / "run-logs" / "manager-queue"
+    q = W / "run-logs" / "scoping-queue"
     for f in sorted([q / "out" / f"{tid}.md"] + list((W / "manager-answers").rglob(f"*{tid}*.md")),
                     key=lambda p: p.stat().st_mtime if p.exists() else 0):
         if f.is_file() and not f.name.endswith(".thinking.md"):

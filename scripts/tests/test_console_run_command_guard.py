@@ -41,7 +41,13 @@ def ck(label, got, want):
 @contextlib.contextmanager
 def quiet_actions():
     saved = console.ACTIONS
-    with tempfile.TemporaryDirectory(prefix="t1069rc-") as d:
+    # NOT UNDER /tmp (2026-10-30): the /tmp guard from Jas's 2026-10-27 decision refuses ANY write under /tmp, so the
+    # mirror this suite creates there was refused and the case that should have passed could not run. The guard's own
+    # message says where: ~/.cache/hivemind-tmp. Found by making the assertion legible -- it used to read a file that
+    # never existed and die with FileNotFoundError before saying which case failed.
+    _root = Path.home() / ".cache" / "hivemind-tmp"
+    _root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="t1069rc-", dir=str(_root)) as d:
         console.ACTIONS = Path(d) / "manager-actions.jsonl"
         try:
             yield Path(d)
@@ -113,8 +119,14 @@ def main():
         mirror.mkdir(parents=True)
         (mirror / "x.py").write_text("a\n", encoding="utf-8")
         out = run(f"cp {mirror / 'x.py'} {mirror / 'y.py'}", d)
+        # READ ONLY IF IT WAS WRITTEN (2026-10-30). The tuple below used to call read_text() while BUILDING the
+        # argument, so a refused copy died with FileNotFoundError inside the assertion instead of reporting that the
+        # copy was refused -- the check crashed on the case it exists to catch. The refusal is still a failure; it is
+        # now a legible one.
+        _wrote = not out.startswith("REFUSED")
+        _y = mirror / "y.py"
         ck("a temp-dir scripts/tests mirror is writable (write happened)",
-           (not out.startswith("REFUSED"), (mirror / "y.py").read_text(encoding="utf-8")),
+           (_wrote, _y.read_text(encoding="utf-8") if _y.exists() else ""),
            (True, "a\n"))
         out = run(f"cat {console.REPO}/scripts/tests/test_console_refuse_tests_writes.py | head -1", d)
         ck("reading a live suite is not refused (the Manager runs suites every day)",

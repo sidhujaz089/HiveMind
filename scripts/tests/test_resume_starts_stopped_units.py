@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Resume must start the production units a person's pause stopped, even though production.target
 stays active (t1557). The Hub's GX10 Pause calls gx10_off, which for a person stops the individual
-units (manager-queue.service, auditor-scoping.service) but NOT production.target -- so the target
+units (scoping-queue@manager.service, scoping-queue@auditor.service) but NOT production.target -- so the target
 remains 'active'. Resume calls gx10_on, which today only runs `start production.target` -- a no-op
 while the target is already active -- and brings neither unit back. They stayed down 52 minutes.
 
 Contract (systemctl is faked; nothing real is started or stopped):
-  - after a person's pause, gx10_on starts manager-queue.service and auditor-scoping.service;
+  - after a person's pause, gx10_on starts scoping-queue@manager.service and scoping-queue@auditor.service;
   - gx10_on does NOT force a Swift reload (swift.service is not started);
   - gx10_on still starts production.target (the memory-guard / boot case stops the target itself).
 
@@ -41,8 +41,8 @@ with tempfile.TemporaryDirectory() as td:
     SC.DEVICE_PAUSE_LEDGER = Path(td) / "device-pause.jsonl"
     calls = []
     deps = ("production.target\n"
-            "  auditor-scoping.service\n"
-            "  manager-queue.service\n"
+            "  scoping-queue@auditor.service\n"
+            "  scoping-queue@manager.service\n"
             "  swift.service\n")
 
     def fake_run(cmd, **kw):
@@ -67,8 +67,8 @@ with tempfile.TemporaryDirectory() as td:
         starts = [c for c in calls if "start" in c]
         flat = [x for c in starts for x in c]
         check("Resume succeeds", ok, True)
-        check("Resume starts the Manager queue", "manager-queue.service" in flat, True)
-        check("Resume starts the Auditor's scoping", "auditor-scoping.service" in flat, True)
+        check("Resume starts the Manager queue", "scoping-queue@manager.service" in flat, True)
+        check("Resume starts the Auditor's scoping", "scoping-queue@auditor.service" in flat, True)
         check("Resume does NOT force a Swift reload", "swift.service" in flat, False)
         check("Resume still starts production.target (guard/breaker case)",
               "production.target" in flat, True)

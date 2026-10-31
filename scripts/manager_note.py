@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """After a manager job: note the task with what was done, and route it to whoever moves next.
 
-    python3 scripts/manager_note.py t323 workspace/run-logs/manager-queue/out/t323.md
+    python3 scripts/manager_note.py t323 workspace/run-logs/scoping-queue/out/t323.md
 
 Jas, 2026-09-24: Q4 had answered t323, t367 and t248, and the Hub showed nothing -- a task
 worked by the manager looked untouched. The answer names its step, (a) ALREADY DONE, (b) NEEDS JAS,

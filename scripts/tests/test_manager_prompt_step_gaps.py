@@ -6,7 +6,7 @@ Every flow that returns a task to the scoper -- a bridge or lint refusal, a pref
 build still red after every attempt, a Manager answer with no chunks block, a withdrawn chunk, a
 re-scope after Jas's reply -- ends in one place: manager_prompt.build_prompt(tid) for the next
 scoping session. So that is where the gap list goes. build_prompt reads the task's last answer
-(workspace/run-logs/manager-queue/out/<tid>.md), parses its chunks block, and checks each
+(workspace/run-logs/scoping-queue/out/<tid>.md), parses its chunks block, and checks each
 implementation chunk's steps against the repository AS IT IS NOW with the same check scope_gate
 applies (scope_lint.steps_findings, require=True): a chunk with no steps, or a step whose `now` is
 no longer the file's text (main moved, or it never was), is listed by chunk and step, with the
@@ -41,7 +41,7 @@ def _root(chunks=None):
     (d / 'scripts' / 'tests').mkdir(parents=True)
     (d / 'scripts' / 'tests' / 'test_mod.py').write_text('print(1)\n', encoding='utf-8')
     if chunks is not None:
-        out = d / 'workspace' / 'run-logs' / 'manager-queue' / 'out'
+        out = d / 'workspace' / 'run-logs' / 'scoping-queue' / 'out'
         out.mkdir(parents=True)
         (out / 't9.md').write_text('answer\n\n```chunks\n' + json.dumps(chunks) + '\n```\n', encoding='utf-8')
     return d

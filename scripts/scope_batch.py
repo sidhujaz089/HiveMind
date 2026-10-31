@@ -19,10 +19,10 @@ HOW, reusing everything downstream:
      never hold overlapping batches.
   3. ONE prompt: the first task's full standard prompt (skills, dossier, rules), then each other task's
      text and dossier, and the rule: one section per task, each ending in its own `chunks` block.
-  4. split() cuts the answer into workspace/run-logs/manager-queue/out/<task>.md per task, and each
+  4. split() cuts the answer into workspace/run-logs/scoping-queue/out/<task>.md per task, and each
      goes through manager_note and the bridge EXACTLY as a single scope does. A task whose section is
      missing gets no file and is simply scoped again later on its own.
-OFF SWITCH: workspace/run-logs/manager-queue/BATCH_OFF (any content) -- pick() then returns <first> alone.
+OFF SWITCH: workspace/run-logs/scoping-queue/BATCH_OFF (any content) -- pick() then returns <first> alone.
 """
 import re
 import sys
@@ -30,7 +30,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(REPO / "scripts")]
-Q = REPO / "workspace" / "run-logs" / "manager-queue"
+Q = REPO / "workspace" / "run-logs" / "scoping-queue"
 TASKS = REPO / "workspace" / "tasks"
 BATCH_MAX = 3            # a 32k-token answer holds about three full scopes with their oracles
 PATH = re.compile(r"\b((?:scripts|projects)/[\w./-]+\.(?:py|sh|js|json))\b")

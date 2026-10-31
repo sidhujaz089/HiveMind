@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Parallel scoping (Jas, 2026-10-08: "Why is scoping capped at 1?" -> "Yes", build it).
 
-manager_queue.sh scoped one task at a time. Now it runs up to N workers, and N comes from ONE
+scoping_queue.sh scoped one task at a time. Now it runs up to N workers, and N comes from ONE
 place: the scheduler's lane rotation (dispatch_loop), where Scoping takes its turn beside RCA,
 session review and the rest, counts against the model's lanes, and honours Scoping's Max lanes on
 the Models tab. The scheduler writes the number it granted; the queue starts workers up to it.
@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-Q = REPO / "workspace" / "run-logs" / "manager-queue"
+Q = REPO / "workspace" / "run-logs" / "scoping-queue"
 GRANT_MAX_AGE_S = 1800          # a scheduler silent this long is dead; fall back to one worker
 
 
@@ -94,9 +94,21 @@ def claim_batch(tasks, pid=None, q=None):
 
 
 def write_grant(n, q=None, now=None):
+    """The scheduler's grant, written into the queue directory IF IT EXISTS.
+
+    IT DOES NOT CREATE THE DIRECTORY (Claude, 2026-10-31). It used to mkdir(parents=True), which meant a scheduler tick
+    recreated the queue directory the moment anything moved it -- so a rename migration could never hold: migrate before
+    the merge and the old code's next tick recreated manager-queue/GRANT; merge first and the new code created
+    scoping-queue/GRANT beside the old one. NOT creating it removes the race at the source: a missing directory stays
+    missing, dispatch_loop.queue_dir_missing_note() reports it, and a grant is simply not recorded until someone fixes
+    the directory. A grant is a hint; inventing a queue directory to hold one is not.
+    """
     p = Path(q or Q) / "GRANT"
-    p.parent.mkdir(parents=True, exist_ok=True)
+    if not p.parent.is_dir():
+        print(f"  NOTE: not writing a grant: {p.parent} does not exist (the queue directory is missing)", file=sys.stderr)
+        return False
     p.write_text(json.dumps({"workers": int(n), "at": int(now or time.time())}) + "\n")
+    return True
 
 
 def granted(q=None, now=None):
