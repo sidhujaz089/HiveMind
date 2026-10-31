@@ -8,3 +8,4 @@ t645 | done | cloud/t645 | write_deliverable + deliverable_gate added to scripts
 t675 | already-green | cloud/t675 | fix landed 2026-10-05 (write_tick_row); wrote pinning oracle test_t675_slim_tick_rows.py, 16/16 green on arrival
 t693 | blocked | cloud/t693 | oracle imports projects/app-repo/feedback.py which is not in the export (ModuleNotFoundError); red for the wrong reason, nothing built
 t697 | done | cloud/t697 | load_all/find skip-with-report vanished files; new oracle red->green 8/8; 39 taskstore suites no difference vs main
+mf1 | done | cloud/mf1 | merge_reviewed.require_oracle_for_guarded + scripts/text_assert_lint.py; new oracle red (2 failed) -> green (0 failed, 13/13); 92 live offenders reported
