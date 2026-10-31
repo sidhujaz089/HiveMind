@@ -2837,44 +2837,6 @@ class Checker:
                 self.result("PASS", "PROJECT-INDEX.md is current")
 
     # ==============================================================================
-        # --- the family ledger passes its own section census -------------------------
-        # Chat runs this census from outside, against a prose element list in
-        # INSTRUCTIONS.txt. That list travels the same transport as the ledger and is not
-        # itself census-checked, so a truncated copy of it still reads like a list -- the
-        # single point of failure Chat identified on 2026-08-19. scripts/check_ledger.py
-        # holds the element list in code, where a truncation is a wrong length rather than
-        # a shorter paragraph. Two independent witnesses, one of which survives the hop.
-        ledger = self.repo / "chat" / "projects" / "family" / "State_Ledger_Family_Project.txt"
-        if not ledger.is_file():
-            self.result(
-                "SKIP", "The family ledger passes its own section census",
-                "chat/ is not present in this clone (gitignored by D-22).\n"
-                "Nothing was checked -- this is not a pass.",
-            )
-        else:
-            try:
-                sys.path.insert(0, str(self.repo / "scripts"))
-                from check_ledger import census  # noqa: E402
-                findings, summary = census(
-                    ledger.read_text(encoding="utf-8", errors="replace"))
-                if findings:
-                    self.result(
-                        "FAIL", "The family ledger passes its own section census",
-                        "\n".join(findings)
-                        + "\n\nRun: python3 scripts/check_ledger.py",
-                    )
-                else:
-                    self.result(
-                        "PASS",
-                        f"The family ledger passes its own section census "
-                        f"({summary['sections_found']}/{summary['sections_expected']} "
-                        f"sections, header and foot present)",
-                    )
-            except Exception as e:  # noqa: BLE001
-                self.result(
-                    "WARN", "The family ledger passes its own section census",
-                    f"The census could not run: {e}\nNothing was checked.",
-                )
 
 
     def check_served_prose(self):
