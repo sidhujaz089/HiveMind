@@ -1,5 +1,7 @@
 # Harness tasks for the cloud
 
+**Also: tasks/MECHANICAL-FIXES.md: eight harness checks (mf1 to mf8), in order. Do these first.**
+
 Refreshed 2026-10-31 from the origin repository's main. Tasks closed since the last export are gone; t296, t478, t645, t675 and t697 are DONE on their cloud/ branches and awaiting review, so do not redo them. t693 is back: projects/app-repo/feedback.py, the import it was blocked on, is now in the export.
 
 | Task | Title | Oracle |
@@ -117,6 +119,4 @@ Refreshed 2026-10-31 from the origin repository's main. Tasks closed since the l
 
 | Task | Title | Oracle |
 |---|---|---|
-| t9583 | Red on main: test_manager_outcomes.py | (write one) |
-| t9585 | Red on main: test_manager_outcomes.py | (write one) |
 | t9586 | Red on main: test_manager_outcomes.py | (write one) |

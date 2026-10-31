@@ -14,6 +14,11 @@ into the real repository by its own reviewer. Your branch is the deliverable.
 The live services (local models on ports 8000/11434, systemd units, a second machine) are NOT here. A suite that
 needs them will fail here whatever you do. Tasks whose oracle needs them were left out of `tasks/`.
 
+## Order
+
+Start with `tasks/MECHANICAL-FIXES.md` (mf1 to mf8, in the order it gives), then the tasks in `tasks/INDEX.md`.
+For an mf item, the branch is `cloud/mfN` and the task file is that section.
+
 ## How to do a task
 
 1. **One task, one branch: `cloud/tNNN`**, from `main`. Never more than one task per branch.
