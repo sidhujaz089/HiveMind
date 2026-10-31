@@ -307,4 +307,15 @@ if git diff --cached --name-only | grep -q 'projects/local-inference/models/FLOW
     fi
 fi
 
+# --- mf4: a state path cannot be renamed without a migration ------------------------------------
+# Seen: the scoping-queue rename moved the code but not the live directory. The rule lives in
+# scripts/state_path_gate.py -- one copy: a staged change that removes a workspace/run-logs/ or
+# ~/.cache/workspace/ path literal, while the OLD path has writes in the last 24h, is refused
+# unless the branch stages a migration script or a test that starts from the old layout.
+if [ -f "$(dirname "$0")/../state_path_gate.py" ]; then
+    if ! spout=$(timeout 60 python3 "$(dirname "$0")/../state_path_gate.py" --staged 2>&1); then
+        fail "a live state path is renamed with no migration (state_path_gate, mf4)." "$spout"
+    fi
+fi
+
 exit 0

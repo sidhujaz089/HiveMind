@@ -187,7 +187,11 @@ def main():
         print("\n  --dry-run: nothing dispatched.")
         return 0
 
-    RESULTS.parent.mkdir(parents=True, exist_ok=True)
+    if not RESULTS.parent.is_dir():
+        # A state directory is created by boot or a migration, never by a writer (mf4):
+        # creating it here resurrects a renamed layout mid-migration. Report and stop.
+        raise SystemExit(f"parallel_dispatch: {RESULTS.parent} is missing -- a state "
+                         f"directory is created by boot or a migration, never by a writer (mf4)")
     with RESULTS.open("a", encoding="utf-8") as f:
         f.write(f"\n{'=' * 70}\n# RUN {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} "
                 f"-- {len(jobs)} job(s) in parallel\n")

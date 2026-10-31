@@ -217,7 +217,12 @@ def write_tick_row(*, running, priority, started, preempted, queued, skipped, id
     slim.update(queued_n=len(queued), skipped_n=len(skipped), queued_by_kind=by_kind)
     path = Path(latest_tick_path or LATEST_TICK_FILE)
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
+        # A STATE DIRECTORY IS CREATED BY BOOT OR A MIGRATION, NEVER BY A WRITER (mf4): a
+        # writer that mkdirs its parent resurrects a renamed layout mid-migration. Missing
+        # means report, not create.
+        if not path.parent.is_dir():
+            raise OSError(f"{path.parent} is missing -- a state directory is created by "
+                          f"boot or a migration, never by a writer (mf4)")
         tmp = path.with_name(path.name + ".tmp")
         tmp.write_text(json.dumps({"at": now(), **full}, ensure_ascii=False), encoding="utf-8")
         tmp.replace(path)
@@ -2335,8 +2340,12 @@ def pressure_hold(avg60=None, state=None):
         held = False
     now_held = avg60 >= PRESSURE_HOLD_ON or (held and avg60 >= PRESSURE_HOLD_OFF)
     if now_held != held:
-        state.parent.mkdir(parents=True, exist_ok=True)
-        state.write_text(json.dumps({"held": now_held, "avg60": avg60, "at": now()}) + "\n", encoding="utf-8")
+        if state.parent.is_dir():
+            state.write_text(json.dumps({"held": now_held, "avg60": avg60, "at": now()}) + "\n", encoding="utf-8")
+        else:
+            print(f"  NOTE: {state.parent} is missing -- pressure state not recorded; a state "
+                  f"directory is created by boot or a migration, never by a writer (mf4)",
+                  file=sys.stderr)
     if not now_held:
         return None
     return (f"waiting for memory pressure: {avg60:.0f}% over the last minute -- no new build starts at or "
@@ -2609,7 +2618,9 @@ def cached_red(run, state=None):
             with lock:
                 mine[t] = r
                 try:
-                    RED_CACHE.parent.mkdir(parents=True, exist_ok=True)
+                    if not RED_CACHE.parent.is_dir():
+                        raise OSError(f"{RED_CACHE.parent} is missing -- a state directory is "
+                                      f"created by boot or a migration, never by a writer (mf4)")
                     RED_CACHE.write_text(json.dumps({state: mine}), encoding="utf-8")  # one state kept
                 except OSError as e:
                     print(f"  NOTE: red cache not written: {e}")
