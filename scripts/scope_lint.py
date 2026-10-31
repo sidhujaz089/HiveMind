@@ -62,6 +62,17 @@ WINDOW_BYTES = 40_000          # the manager prompt's own rule: "a file over ~40
 STANDING_RULE_FILES = ("docs/PREFERENCES.md", "docs/DECISIONS.md", "docs/LESSONS.md")  # t768: permanent-rule docs must be registered
 SKILL_TARGET = re.compile(r"^docs/skills/[^/]+/SKILL[.]md$")
 LIVE_STATE_CHECKS = ("fixed-tmp-path", "no-timeout", "model-call-outside-contract", "ps-command-column")
+# t478: a refusal is a diagnosis with no prescription unless it names the repair. One sentence per
+# live-state rule, appended to the finding's evidence so the author knows what to write. The
+# sentences deliberately avoid the forbidden shapes themselves (this file is checked by
+# scripts/library_checks.py too).
+LIVE_STATE_REPAIRS = {
+    "no-timeout": "put timeout=60 on every subprocess run/check_output/urlopen call "
+                  "(the call blocks forever if the peer stalls)",
+    "fixed-tmp-path": "build the path under tempfile.mkdtemp() instead of a fixed path",
+    "model-call-outside-contract": "an oracle must not call a model endpoint, use a fake transport",
+    "ps-command-column": "match a process by the full command column, not a name",
+}
 
 def skill_evidence_findings(chunks, repo=REPO):
     """brief-skill-evidence (t1091, RCA ac7ac8636e39): a dispatch that edits a SKILL.md must carry observed_failure_evidence, the dispatch/task id and the one-line observed failure that justifies the edit; a skill edit without one is a speculative improvement, and three passed (a4eaa838, 6b93b546, 8d3fd873)."""
@@ -351,7 +362,11 @@ def static(chunks, repo):
                             f"{e.lineno}: {e.msg} -- decided without executing, so it is available "
                             "under --no-run"))
             for cid, _sev, line, code in library_checks.run(probe, ot, only=LIVE_STATE_CHECKS):
-                out.append(("oracle-gate", i, f, f"{cid} at line {line}: {code}"))
+                repair = LIVE_STATE_REPAIRS.get(cid, "")
+                evidence = f"{cid} at line {line}: {code}"
+                if repair:
+                    evidence += f" -- repair: {repair}"
+                out.append(("oracle-gate", i, f, evidence))
             # NO RUNNER, NO TEST (calibration 2026-09-28: 10 of 75 Q4 oracles). The builder runs
             # `python3 <oracle>` and pytest is not installed, so test functions with no __main__
             # block execute nothing: red only while an import fails, green for an empty stub.
