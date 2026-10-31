@@ -16,3 +16,4 @@ mf4 | done | cloud/mf4 | state_path_gate.py + pre-commit wiring (guarded: hooks/
 mf6 | done | cloud/mf6 | merge_changelog/replay_flow/refresh_generated in merge_reviewed; FLOW conflicts merge as data, registries regenerate post-merge; oracle 3 failed -> 0 failed (16/16); test_merge_reviewed 0->0
 mf7 | done | cloud/mf7 | lanes.py poster()/resolve_lane(): poster stamp on every row, HIVEMIND_LANE identity gates lane args; oracle 7 failed -> 0 failed (10/10); lanes/role_gate suites unchanged
 mf8 | done | cloud/mf8 | lanes.py quotes_evidence/require_evidence/show_answered_for; oracle 6 failed -> 0 failed (10/10); known consequence: test_lanes_board bare-'yes' answer now refused (pre-mf8 contract, reviewer updates fixture)
+t693 | blocked | cloud/t693 | second attempt: feedback.py exported but imports device_tiles (holds scheduler_controls) which is not in export; oracle red for wrong reason
