@@ -88,6 +88,43 @@ MECHANICAL = [
 ]
 
 
+def write_deliverable(path, body):
+    """t645: write the deliverable INCREMENTALLY, so a partial file exists after round 1.
+
+    The 45-round settings review was stopped mid-flight and its .md was lost entirely,
+    because the only deliverable-shaped write sat after the round loop. A partial file
+    beats a perfect one. Accepts a str or a Path; creates parent directories; writes the
+    whole of `body` as UTF-8. On failure it REPORTS (path, exception type, message) and
+    returns False -- never a silent pass.
+    """
+    p = Path(path)
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(body, encoding="utf-8")
+        return True
+    except OSError as e:
+        print(f"write_deliverable: {p}: {type(e).__name__}: {e}", file=sys.stderr)
+        return False
+
+
+def deliverable_gate(path):
+    """t645: (ok, why), failing CLOSED. ok is True only for a real, non-empty file whose
+    bytes read identically twice. Absent, directory, 0-byte or byte-unstable -> False,
+    with a non-empty reason naming the path. No verdict is cached: every call re-reads."""
+    p = Path(path)
+    if p.is_dir():
+        return False, f"{p} is a directory, not a deliverable file"
+    if not p.is_file():
+        return False, f"{p} does not exist -- the deliverable was never written"
+    first = p.read_bytes()
+    if not first:
+        return False, f"{p} is empty (0 bytes) -- the interruption signature"
+    second = p.read_bytes()
+    if first != second:
+        return False, f"{p} is not byte-stable: two consecutive reads differ"
+    return True, f"{p} exists, {len(first)} byte(s), byte-stable"
+
+
 def load_function(path, name):
     path = Path(path)
     spec = importlib.util.spec_from_file_location(path.stem, path)
