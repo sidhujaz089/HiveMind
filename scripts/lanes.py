@@ -69,7 +69,37 @@ def lane_ok(lane):
     return lane
 
 
+def poster():
+    """(lane_from_env, tool@host) -- who is posting (mf7).
+
+    The lane is an IDENTITY, not an argument: each harness sets HIVEMIND_LANE at launch.
+    tool@host is always known (HIVEMIND_TOOL, else the running script's name, plus the
+    host) and is stamped on every row, so a post can never be anonymous."""
+    import platform
+    tool = (os.environ.get("HIVEMIND_TOOL") or "").strip() \
+        or (Path(sys.argv[0]).stem if sys.argv and sys.argv[0] else "") or "unknown"
+    host = platform.node() or "unknown-host"
+    return os.environ.get("HIVEMIND_LANE", "").strip(), f"{tool}@{host}"
+
+
+def resolve_lane(arg):
+    """mf7: the lane comes from the poster's identity, and a lane argument that disagrees
+    is REFUSED -- a post from one lane was recorded under another because the lane was
+    whatever the caller typed. With no HIVEMIND_LANE set (a human at a prompt), the
+    argument stands and the tool@host stamp still says who really posted."""
+    env, _ident = poster()
+    if env:
+        if arg and str(arg).strip() and str(arg).strip() != env:
+            raise SystemExit(f"REFUSED -- this poster IS lane {env!r} (HIVEMIND_LANE), not "
+                             f"{str(arg).strip()!r}: a post from one lane is never recorded "
+                             f"under another (mf7)")
+        return lane_ok(env)
+    return lane_ok(arg)
+
+
 def append(row):
+    # mf7: the board stamps who posted, on every row, whatever the lane field says.
+    row.setdefault("poster", poster()[1])
     """Append one row under an exclusive lock. The only writer of the board."""
     HOME.mkdir(parents=True, exist_ok=True)
     with BOARD.open("a", encoding="utf-8") as f:
@@ -189,21 +219,21 @@ def main(argv=None):
     sub.add_parser("status")
     a = ap.parse_args(argv)
     if a.cmd == "post":
-        print(fmt(append({"kind": "post", "at": iso(now()), "lane": lane_ok(a.lane), "text": a.text})))
+        print(fmt(append({"kind": "post", "at": iso(now()), "lane": resolve_lane(a.lane), "text": a.text})))
     elif a.cmd == "claim":
         if not (0 < a.hours <= 24):
             raise SystemExit("--hours must be between 0 and 24; a longer hold is a re-claim, not a long one")
-        print(fmt(claim(a.lane, a.what, a.why, a.hours)))
+        print(fmt(claim(resolve_lane(a.lane), a.what, a.why, a.hours)))
     elif a.cmd == "release":
-        print(fmt(release(a.lane, a.what)))
+        print(fmt(release(resolve_lane(a.lane), a.what)))
     elif a.cmd == "ask":
         lane_ok(a.to)
-        print(fmt(append({"kind": "ask", "at": iso(now()), "lane": lane_ok(a.lane), "to": a.to,
+        print(fmt(append({"kind": "ask", "at": iso(now()), "lane": resolve_lane(a.lane), "to": a.to,
                           "qid": uuid.uuid4().hex[:6], "text": a.text})))
     elif a.cmd == "answer":
         if a.qid not in {q["qid"] for q in open_questions()}:
             raise SystemExit(f"no open question {a.qid!r}")
-        print(fmt(append({"kind": "answer", "at": iso(now()), "lane": lane_ok(a.lane), "qid": a.qid,
+        print(fmt(append({"kind": "answer", "at": iso(now()), "lane": resolve_lane(a.lane), "qid": a.qid,
                           "text": a.text})))
     elif a.cmd == "read":
         since = parse(a.since) if a.since else None
