@@ -1,5 +1,0 @@
-{
- "_what": "Which search provider the models' web_search tool uses. SearXNG, self-hosted (t488 option A, Jas 2026-10-04), started by scripts/searxng_up.sh; its settings are projects/local-inference/searxng/settings.yml. The tool is still OFF for every role until Jas switches it on for one on the Models tab.",
- "provider": "searxng",
- "url": "http://127.0.0.1:8888"
-}
