@@ -119,6 +119,54 @@ def open_questions(rs=None):
     return [r for r in rs if r.get("kind") == "ask" and r.get("qid") not in answered]
 
 
+def quotes_evidence(text):
+    """mf8: True when `text` quotes a command and its output -- a line starting with '$ '
+    followed by at least one non-empty line. A claim with no run behind it is a sentence."""
+    lines = str(text or "").splitlines()
+    for i, l in enumerate(lines):
+        if l.strip().startswith("$ ") and any(x.strip() for x in lines[i + 1:]):
+            return True
+    return False
+
+
+def require_evidence(kind, text):
+    """mf8: an ANSWER or SIGNATURE post that does not quote a command and its output is
+    refused -- check before claiming. The quote is a line starting with '$ ' and the
+    output under it."""
+    if not quotes_evidence(text):
+        raise SystemExit(
+            f"REFUSED -- a{'n ' + kind if kind == 'answer' else ' ' + kind} post must QUOTE "
+            f"the command and its output: a line starting with '$ ' followed by what it "
+            f"printed. Check before claiming (mf8).")
+
+
+def answered_questions(rs=None):
+    """[(ask_row, answer_row)] for every question that has an answer."""
+    rs = rows() if rs is None else rs
+    asks = {r.get("qid"): r for r in rs if r.get("kind") == "ask"}
+    return [(asks[r["qid"]], r) for r in rs
+            if r.get("kind") == "answer" and r.get("qid") in asks]
+
+
+def show_answered_for(text, rs=None):
+    """mf8: before a post asks for a signature, show any answered question on the same
+    branch -- the asker may already have the answer they are about to ask for. A branch is
+    any slash-carrying token in the post's text."""
+    tokens = set(re.findall(r"[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+", str(text or "")))
+    # A quoted command drags file paths into the text; a path is not a branch. Dropping
+    # extension-shaped tokens keeps the match on branch names (cloud/t9, bridge/t296).
+    tokens = {t for t in tokens
+              if not re.search(r"\.(py|sh|md|json|jsonl|txt|log|lock)$", t)}
+    if not tokens:
+        return []
+    hits = [(a, b) for a, b in answered_questions(rs)
+            if any(t in (a.get("text", "") + " " + b.get("text", "")) for t in tokens)]
+    for a, b in hits:
+        print(f"  ANSWERED on this branch already: [{a['qid']}] {a['lane']} -> {a['to']}: "
+              f"{a['text']}\n    {b['lane']}: {b['text']}")
+    return hits
+
+
 def claim(lane, what, why, hours=4.0):
     lane_ok(lane)
     cur = active_claims().get(what)
@@ -189,6 +237,11 @@ def main(argv=None):
     sub.add_parser("status")
     a = ap.parse_args(argv)
     if a.cmd == "post":
+        if "SIGNATURE" in a.text:
+            # mf8: before a post asks for a signature, show any answered question on the
+            # same branch, then hold the post to the evidence rule.
+            show_answered_for(a.text)
+            require_evidence("SIGNATURE", a.text)
         print(fmt(append({"kind": "post", "at": iso(now()), "lane": lane_ok(a.lane), "text": a.text})))
     elif a.cmd == "claim":
         if not (0 < a.hours <= 24):
@@ -203,6 +256,7 @@ def main(argv=None):
     elif a.cmd == "answer":
         if a.qid not in {q["qid"] for q in open_questions()}:
             raise SystemExit(f"no open question {a.qid!r}")
+        require_evidence("answer", a.text)   # mf8: check before claiming
         print(fmt(append({"kind": "answer", "at": iso(now()), "lane": lane_ok(a.lane), "qid": a.qid,
                           "text": a.text})))
     elif a.cmd == "read":
