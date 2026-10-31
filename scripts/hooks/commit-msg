@@ -97,11 +97,11 @@ fi
 # committed. A lane commit carries `Lane: L1`..`L4`; the claim check reads it. Optional, because the
 # services and Jas commit too -- but when present it must be a real lane, never a guess.
 if echo "$BODY" | grep -qE '^Lane:'; then
-    # ANY SHORT LABEL, AND THE SAME 24-CHARACTER CAP role_gate.py USES (2026-10-31). The four sprint names are gone;
-    # the trailer says who is claiming a file. The two checks disagreed once -- this hook accepted any length while
-    # role_gate capped at 24, so a 30-character label passed here and failed there.
-    if ! echo "$BODY" | grep -qE '^Lane: [A-Za-z0-9][A-Za-z0-9_.-]{0,23}[[:space:]]*$'; then
-        fail "the 'Lane:' trailer must be a short label: letters, digits, dot, dash or underscore, at most 24 characters."
+    # ONE RULE, ONE PLACE (mf3). The shape and the 24-character cap live in role_gate.LANE_RE
+    # alone; this hook once carried its own grep copy, and the two disagreed on the cap. The
+    # presence test above is only routing -- the FORM is role_gate's check-lane.
+    if [ -n "$TOP" ] && [ -f "$TOP/scripts/role_gate.py" ]; then
+        python3 "$TOP/scripts/role_gate.py" check-lane "$MSG_FILE" || exit 1
     fi
     # --- Another lane's file (commit B, 2026-10-27) ------------------------------------------
     # The shape above is the trailer's FORM; this is its meaning. A lane that names itself may not

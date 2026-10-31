@@ -2,6 +2,7 @@
 """Refuse a merge into main unless the committer's ROLE has that merge's task on its list (t476).
 
     python3 scripts/role_gate.py commit-msg <message-file>     # called by scripts/hooks/commit-msg
+    python3 scripts/role_gate.py check-lane <message-file>     # ditto: the Lane trailer's shape (LANE_RE, mf3)
     python3 scripts/role_gate.py lane-owns <message-file>      # ditto: the four lanes' file ownership
     python3 scripts/role_gate.py ref-update                    # stdin of reference-transaction
     python3 scripts/role_gate.py who "<Agent trailer value>"   # which role that trailer maps to
@@ -270,6 +271,26 @@ def lane_refusal(lane, blockers):
               " (python3 scripts/role_store.py owns).",
               "  A claim lasts 4 h; nothing was committed.", ""]
     return "\n".join(lines)
+
+
+def check_lane_form(msg_file):
+    """The Lane trailer's SHAPE, from LANE_RE alone -- one rule, one place (mf3).
+
+    scripts/hooks/commit-msg used to validate the trailer with its own grep, a second copy
+    of LANE_RE that once disagreed on the length cap (the hook accepted any length while
+    this file capped at 24). The hook now calls `role_gate.py check-lane`, so editing
+    LANE_RE changes what the hook accepts. No trailer is fine (the services and Jas commit
+    without one); a trailer that is present must match."""
+    text = "\n".join(l for l in Path(msg_file).read_text(encoding="utf-8", errors="replace")
+                     .splitlines() if not l.startswith("#"))
+    bad = [l for l in text.splitlines()
+           if l.startswith("Lane:") and not LANE_RE.match(l)]
+    if bad:
+        print("  REFUSED BY THE LANE GATE -- the 'Lane:' trailer must be a short label: "
+              "letters, digits, dot, dash or underscore, at most 24 characters "
+              f"(role_gate.LANE_RE). Got: {bad[0]!r}")
+        return 1
+    return 0
 
 
 def check_lane(msg_file):
@@ -556,6 +577,8 @@ def main(argv):
         return check_review(argv[2]) if task_for_merge() is not None else 0
     if len(argv) >= 3 and argv[1] == "preflight":
         return preflight(argv[2], argv[3] if len(argv) > 3 else None)
+    if len(argv) >= 3 and argv[1] == "check-lane":
+        return check_lane_form(argv[2])
     if len(argv) >= 3 and argv[1] == "lane-owns":
         return check_lane(argv[2])
     if len(argv) >= 2 and argv[1] == "ref-update":
