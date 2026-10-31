@@ -10,3 +10,4 @@ t693 | blocked | cloud/t693 | oracle imports projects/app-repo/feedback.py which
 t697 | done | cloud/t697 | load_all/find skip-with-report vanished files; new oracle red->green 8/8; 39 taskstore suites no difference vs main
 mf1 | done | cloud/mf1 | merge_reviewed.require_oracle_for_guarded + scripts/text_assert_lint.py; new oracle red (2 failed) -> green (0 failed, 13/13); 92 live offenders reported
 mf3 | done | cloud/mf3 | role_gate check-lane subcommand + hook delegates (guarded: role_gate.py, hooks/commit-msg) + regex_dup_lint.py; oracle 8 failed -> 0 failed; 21 live dup regexes reported
+mf2 | done | cloud/mf2 | hook_shell_lint.py (silent fallbacks + phantom subcommands) wired into pre-commit (guarded: hooks/pre-commit); oracle 1 failed -> 0 failed (12/12); 9 live offenders reported
