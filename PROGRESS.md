@@ -7,3 +7,4 @@ t478 | done | cloud/t478 | scope_lint oracle-gate evidence now appends repair se
 t645 | done | cloud/t645 | write_deliverable + deliverable_gate added to scripts/probe.py; oracle 15/15 green; round-loop wiring impossible here (brief's probe.py not in export, noted in task file)
 t675 | already-green | cloud/t675 | fix landed 2026-10-05 (write_tick_row); wrote pinning oracle test_t675_slim_tick_rows.py, 16/16 green on arrival
 t693 | blocked | cloud/t693 | oracle imports projects/app-repo/feedback.py which is not in the export (ModuleNotFoundError); red for the wrong reason, nothing built
+t697 | done | cloud/t697 | load_all/find skip-with-report vanished files; new oracle red->green 8/8; 39 taskstore suites no difference vs main
