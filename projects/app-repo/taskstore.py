@@ -247,10 +247,21 @@ def task_files(include_done=False):
 
 
 def load_all(include_done=False):
-    """id -> (meta, body) for every task on disk."""
+    """id -> (meta, body) for every task on disk.
+
+    A file may be DELETED between the glob and the read (t697: the task-guard self-test
+    removes its tNNN--guard-self-test-delete-me.md probe while a live add sweeps the
+    directory). A vanished file is not an error in this store's state -- it is a task
+    that no longer exists -- so it is skipped, with a report, never a crash and never
+    silently."""
     tasks = {}
     for f in task_files(include_done):
-        meta, body = parse(f)
+        try:
+            meta, body = parse(f)
+        except FileNotFoundError:
+            print(f"  note: {f.name} vanished between glob and read (deleted by a "
+                  f"concurrent process) -- skipped", file=sys.stderr)
+            continue
         tasks[meta["id"]] = (meta, body)
     return tasks
 
@@ -272,7 +283,14 @@ def last_speaker(body):
 def find(task_id):
     for f in task_files(include_done=True):
         if f.name.startswith(f"{task_id}--"):
-            return parse(f)
+            try:
+                return parse(f)
+            except FileNotFoundError:
+                # Deleted between glob and read (t697): the task no longer exists,
+                # which is exactly what None, None already means to every caller.
+                print(f"  note: {f.name} vanished between glob and read -- "
+                      f"treated as no such task", file=sys.stderr)
+                return None, None
     return None, None
 
 
