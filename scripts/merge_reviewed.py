@@ -228,6 +228,23 @@ def _record_gate(t0, rc, where):
         print(f"  NOTE: gate run not recorded ({type(e).__name__}: {e})")
 
 
+def require_oracle_for_guarded(paths, oracle):
+    """mf1(a): a change to one of role_gate's six guarded files needs --oracle, not just a diff.
+
+    Seen: test_gate_timeout_message asserted strings in the hook's text and passed while the
+    hook could not read its setting. A guarded merge proven only by eyes can carry the same
+    shape, so for those files the proof is mandatory: a suite that FAILS on main and PASSES
+    merged. Raises SystemExit naming the guarded files when `oracle` is missing."""
+    import role_gate
+    hit = role_gate.guarded_touched([p for p in (paths or []) if p])
+    if hit and not oracle:
+        raise SystemExit(
+            "merge_reviewed: this branch changes guarded file(s) -- "
+            + ", ".join(sorted(set(hit)))
+            + " -- so --oracle is REQUIRED: a suite that fails on main and passes merged. "
+              "A diff review alone cannot land these (mf1).")
+
+
 def build(branch, why, oracle, reviewer, agent, msg_text=None):
     """(commit, changed_paths) for the signed merge, built in the scratch worktree. Raises SystemExit on refusal."""
     # THE SCRATCH IS SHARED, SO THE LOCK IS REQUIRED, NOT REMEMBERED (DS, lanes 603920): both callers build under
@@ -238,6 +255,9 @@ def build(branch, why, oracle, reviewer, agent, msg_text=None):
     rc, ahead, _ = git("rev-list", "--count", f"main..{branch}")
     if rc or ahead == "0":
         raise SystemExit(f"merge_reviewed: {branch} has nothing that is not already in main")
+    # mf1(a): a guarded file cannot land on a diff review alone -- refuse BEFORE any merge work.
+    _rc, _names, _ = git("diff", "--name-only", f"main...{branch}")
+    require_oracle_for_guarded(_names.splitlines(), oracle)
     if oracle:
         before = suite_rc(wt, oracle)
         if before == 0:
