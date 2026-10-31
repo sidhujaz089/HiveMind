@@ -99,7 +99,77 @@ def merge_library(O, T, B):
     return clash
 
 
-GENERATED = {"scripts/library.json", "workspace/SCRIPTS.md"}
+FLOWLOG = "projects/local-inference/models/FLOW-CHANGELOG.jsonl"
+FLOWJSON = "projects/local-inference/models/FLOW.json"
+GENERATED = {"scripts/library.json", "workspace/SCRIPTS.md", FLOWLOG, FLOWJSON}
+
+
+def merge_changelog(ours, theirs=()):
+    """mf6: union both sides' changelog rows and renumber duplicates, in timestamp order.
+
+    Two checkouts each append `n = max + 1`, so parallel branches claim the same number for
+    different changes and every merge conflicted on FLOW-CHANGELOG.jsonl alone. Row identity
+    ignores `n` (the number is bookkeeping, the change is the content); the earliest claim
+    by timestamp keeps its number and later claims take the next free number -- the same
+    rule as flow_change.renumber(), applied at the merge."""
+    import json as _json
+
+    def key(r):
+        return _json.dumps({k: v for k, v in r.items() if k != "n"}, sort_keys=True)
+
+    have = {key(r) for r in ours}
+    rows = [dict(r) for r in ours] + [dict(r) for r in theirs if key(r) not in have]
+    rows.sort(key=lambda r: (str(r.get("at") or ""), r.get("n") or 0))
+    seen, nxt = set(), max([r.get("n") or 0 for r in rows] + [0])
+    for r in rows:
+        n = r.get("n")
+        if n is None or n in seen:
+            nxt += 1
+            r["n"] = nxt
+        seen.add(r["n"])
+    return rows
+
+
+def replay_flow(rows):
+    """The chart the changelog ends at (every row carries the full `after` state), or None."""
+    rows = sorted((r for r in rows if r.get("after") is not None),
+                  key=lambda r: (str(r.get("at") or ""), r.get("n") or 0))
+    return rows[-1]["after"] if rows else None
+
+
+def refresh_generated(wt, merged_paths):
+    """mf6: registries are generated, not hand-merged. Rebuild each one the merge touched
+    from its source, in the scratch worktree, and stage the result -- so a branch that
+    hand-committed FLOW.json, SCRIPTS.md or the changelog cannot drift them past the merge.
+    Returns the refreshed paths; a regeneration failure is SAID and refused, not skipped."""
+    import json as _json
+    wt = Path(wt)
+    merged_paths = set(merged_paths)
+    done = []
+    if {"scripts/library.json", "workspace/SCRIPTS.md"} & merged_paths:
+        r = subprocess.run([sys.executable, "-c",
+                            "import sys; sys.path.insert(0, 'scripts'); import library as L; "
+                            "L.write_md(L.load())"],
+                           cwd=str(wt), capture_output=True, text=True, timeout=300)
+        if r.returncode:
+            raise SystemExit("merge_reviewed: SCRIPTS.md could not be regenerated from "
+                             "library.json:\n" + (r.stderr or r.stdout))
+        done += ["scripts/library.json", "workspace/SCRIPTS.md"]
+    if {FLOWLOG, FLOWJSON} & merged_paths and (wt / FLOWLOG).is_file():
+        rows = [_json.loads(x) for x in
+                (wt / FLOWLOG).read_text(encoding="utf-8").splitlines() if x.strip()]
+        merged = merge_changelog(rows)
+        (wt / FLOWLOG).write_text(
+            "".join(_json.dumps(r, ensure_ascii=False) + "\n" for r in merged),
+            encoding="utf-8")
+        after = replay_flow(merged)
+        if after is not None:
+            (wt / FLOWJSON).write_text(_json.dumps(after, indent=1, ensure_ascii=False) + "\n",
+                                       encoding="utf-8")
+        done += [FLOWLOG, FLOWJSON]
+    if done:
+        git("add", *done, cwd=wt)
+    return done
 
 
 def resolve_generated(wt, branch):
@@ -125,11 +195,26 @@ def resolve_generated(wt, branch):
             print(f"merge_reviewed: library.json entries changed on BOTH sides: {', '.join(clash)}", file=sys.stderr)
             return False
         (wt / "scripts/library.json").write_text(json.dumps(ours, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    r = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, 'scripts'); import library as L; "
-                        "L.write_md(L.load())"], cwd=str(wt), capture_output=True, text=True, timeout=300)
-    if r.returncode:
-        return False
-    git("add", "scripts/library.json", "workspace/SCRIPTS.md", cwd=wt)
+    if conflicted & {"scripts/library.json", "workspace/SCRIPTS.md"}:
+        r = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, 'scripts'); import library as L; "
+                            "L.write_md(L.load())"], cwd=str(wt), capture_output=True, text=True, timeout=300)
+        if r.returncode:
+            return False
+        git("add", "scripts/library.json", "workspace/SCRIPTS.md", cwd=wt)
+    # mf6: a FLOW conflict is two checkouts claiming the same change number -- merge the
+    # changelogs as DATA (union, renumbered) and replay the chart from the result.
+    if conflicted & {FLOWLOG, FLOWJSON}:
+        def flow_rows(rev):
+            rc, txt, _ = git("show", f"{rev}:{FLOWLOG}", cwd=wt)
+            return ([json.loads(x) for x in txt.splitlines() if x.strip()] if rc == 0 else [])
+        merged = merge_changelog(flow_rows("HEAD"), flow_rows(branch))
+        (wt / FLOWLOG).write_text(
+            "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in merged), encoding="utf-8")
+        after = replay_flow(merged)
+        if after is not None:
+            (wt / FLOWJSON).write_text(json.dumps(after, indent=1, ensure_ascii=False) + "\n",
+                                       encoding="utf-8")
+        git("add", FLOWLOG, FLOWJSON, cwd=wt)
     return True
 
 
@@ -255,6 +340,10 @@ def build(branch, why, oracle, reviewer, agent, msg_text=None):
                           cwd=wt)
     for p in filter(None, ledgers.splitlines()):
         git("checkout", "main", "--", p, cwd=wt)
+    # mf6: registries are generated, not hand-merged -- whatever this merge brought to them,
+    # rebuild each touched one from its source so a branch's hand-committed copy cannot land.
+    _rc, _touched, _ = git("diff", "--cached", "--name-only", "main", cwd=wt)
+    refresh_generated(wt, _touched.splitlines())
     # THE MERGE PAYS THE COMMIT'S GATE (2026-10-30). Paths are taken from the staged merge rather than from the
     # commit, because this has to refuse BEFORE a commit exists: a red merge must leave main and the scratch
     # untouched, not produce a commit nobody may land.
