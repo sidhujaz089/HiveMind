@@ -4594,6 +4594,31 @@ class Checker:
         self.result("PASS", "The chart's changelog replays to the chart",
                     f"{len(rows)} row(s), {len(changelog_breaks(rows))} declared break(s)")
 
+    def check_runtime_files(self):
+        """mf5: every registered runtime file is gitignored and untracked.
+
+        workspace/gate-runs.jsonl was committed while the hook appends to it on every run,
+        so no merge could land. The registry (workspace/runtime-files.json) and the rule
+        both live in scripts/runtime_files.py -- one copy; this only reports its verdict."""
+        self.section("Runtime files")
+        name = "Registered runtime files are gitignored and untracked"
+        if not (self.repo / "workspace" / "runtime-files.json").is_file():
+            self.result("SKIP", name,
+                        "workspace/runtime-files.json is missing -- nothing was checked, "
+                        "which is not a pass. See mf5.")
+            return
+        sys.path.insert(0, str(self.repo / "scripts"))
+        import runtime_files
+        probs = runtime_files.problems(self.repo)
+        if probs:
+            self.result("FAIL", name,
+                        "\n".join(f"{e}: {why}" for e, why in probs)
+                        + "\nA service writes these; committing one blocks every merge. "
+                          "Gitignore it (and git rm --cached if tracked).")
+        else:
+            self.result("PASS", name,
+                        f"{len(runtime_files.registered(self.repo))} entr(ies), all covered")
+
     def check_ledger_retention(self):
         """Every big ledger is declared, and every declared one is inside its bound (t4387)."""
         name = "Every ledger is inside its retention bound"
@@ -4833,6 +4858,7 @@ class Checker:
         # naming the exception, never as a pass, and the rest still run.
         for check, args in ((self.check_git_state, ()), (self.check_secrets, ()),
                             (self.check_file_hazards, (files,)), (self.check_ledger_retention, ()),
+                            (self.check_runtime_files, ()),
                             (self.check_guard_tiers, ()),
                             (self.check_structure, ()),
                             (self.check_lesson_ids, ()), (self.check_tmp_inodes, ()), (self.check_disk_free, ()), (self.check_enforcement, ()),

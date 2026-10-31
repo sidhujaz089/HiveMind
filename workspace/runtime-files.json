@@ -1,0 +1,10 @@
+{
+  "what": "Files that services write at run time (mf5). Never commit one: pre-commit refuses to stage them, and check_workspace verifies each is gitignored. An entry ending in '/' covers the directory.",
+  "files": [
+    "workspace/gate-runs.jsonl",
+    "workspace/mcp-calls.jsonl",
+    "workspace/dispatch-loop.jsonl",
+    "workspace/probe-runs.jsonl",
+    "workspace/run-logs/"
+  ]
+}

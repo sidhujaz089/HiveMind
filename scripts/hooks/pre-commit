@@ -307,4 +307,17 @@ if git diff --cached --name-only | grep -q 'projects/local-inference/models/FLOW
     fi
 fi
 
+# --- mf5: do not track files that services write -------------------------------------------------
+# Seen: workspace/gate-runs.jsonl was committed while the hook appends to it on every run, so no
+# merge could land. The registry is workspace/runtime-files.json; the rule lives in
+# scripts/runtime_files.py -- one copy, called here on the staged names.
+if [ -f "$(dirname "$0")/../runtime_files.py" ]; then
+    staged=$(git diff --cached --name-only --diff-filter=ACM)
+    if [ -n "$staged" ]; then
+        if ! rtout=$(timeout 60 python3 "$(dirname "$0")/../runtime_files.py" check-staged $staged 2>&1); then
+            fail "a staged file is registered as a RUNTIME file (workspace/runtime-files.json) -- services write it; it is never committed." "$rtout"
+        fi
+    fi
+fi
+
 exit 0

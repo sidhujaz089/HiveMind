@@ -1,0 +1,9 @@
+# Runtime files -- services write these on every run; committing one blocks every merge (mf5).
+# The authoritative list is workspace/runtime-files.json; check_workspace verifies this file
+# covers it.
+workspace/gate-runs.jsonl
+workspace/mcp-calls.jsonl
+workspace/dispatch-loop.jsonl
+workspace/probe-runs.jsonl
+workspace/run-logs/
+__pycache__/
