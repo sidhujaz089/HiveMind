@@ -27,7 +27,7 @@ landing_row() {
     [ -n "$root" ] || return 0
     mkdir -p "$root/workspace" 2>/dev/null || return 0
     ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo detached)
+    branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || { echo "NOTE: no symbolic ref (detached HEAD)" >&2; echo detached; })
     list=""
     for s in $2; do
         if [ -n "$list" ]; then list="$list, "; fi
@@ -304,6 +304,18 @@ fi
 if git diff --cached --name-only | grep -q 'projects/local-inference/models/FLOW\.json$'; then
     if ! fg=$(timeout 60 python3 "$(dirname "$0")/../flow_change.py" guard 2>&1); then
         fail "FLOW.json was changed outside flow_change.py." "$fg"
+    fi
+fi
+
+# --- mf2: no silent fallback, and no call to a subcommand that does not exist -------------------
+# Seen: this hook family called gate_settings.py get/record before those subcommands existed, and
+# '2>/dev/null || echo 1800' / '|| true' hid argparse's exit 2, so the setting was never read and
+# no run was recorded. The rule lives in scripts/hook_shell_lint.py -- one copy, called here on
+# the staged shell: everything under scripts/hooks/ (not .py) and every *.sh.
+shfiles=$(git diff --cached --name-only --diff-filter=ACM | grep -E '(^scripts/hooks/|\.sh$)' | grep -v '\.py$')
+if [ -n "$shfiles" ] && [ -f "$(dirname "$0")/../hook_shell_lint.py" ]; then
+    if ! shellout=$(timeout 60 python3 "$(dirname "$0")/../hook_shell_lint.py" $shfiles 2>&1); then
+        fail "a staged hook or shell script swallows a failure or calls a missing subcommand (hook_shell_lint, mf2)." "$shellout"
     fi
 fi
 
