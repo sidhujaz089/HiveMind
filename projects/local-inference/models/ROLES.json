@@ -1,0 +1,328 @@
+{
+ "_what": "The role store (Jas, 2026-09-29): every role -- model, person or agent -- with its model, server, tools, tasks in priority order, and how its calls are set up. Edited through scripts/role_store.py (and the Models tab); SERVING.json's roles block is generated from this.",
+ "_step1": "Migrated with NO behaviour change: tools are role_caps.load() as it resolved before; task lists and profile_by_task DESCRIBE today's routing and settings -- the dispatcher does not route by them until step 4; attributes are empty overrides until the Roles pages (step 2).",
+ "roles": {
+  "jas": {
+   "name": "Jas",
+   "kind": "person",
+   "signature": "Jas - Human",
+   "what": "Answers what is assigned to him on the Review tab: assign, unassign, or change who it is assigned to.",
+   "tasks": [
+    {
+     "task": "assigned_jas",
+     "interrupt": false
+    }
+   ],
+   "trailers": [
+    "human/jas"
+   ]
+  },
+  "claude": {
+   "name": "Claude",
+   "kind": "person",
+   "signature": "Claude - Code",
+   "what": "Claude Code. The gate: merges delivered builds (D-34), verifies done-checks, takes what is assigned to it.",
+   "tasks": [
+    {
+     "task": "merge_review",
+     "interrupt": false
+    },
+    {
+     "task": "direct_commit",
+     "interrupt": false
+    },
+    {
+     "task": "done_check",
+     "interrupt": false
+    },
+    {
+     "task": "assigned_claude",
+     "interrupt": false
+    }
+   ],
+   "trailers": [
+    "claude-code",
+    "claude-chat"
+   ]
+  },
+  "manager": {
+   "name": "Manager",
+   "kind": "model",
+   "model": "swift",
+   "what": "Q4 (Jas, 2026-09-23: 'after the swap Q4 does all of Q16's work'). Supervises, reviews briefs, assigns failure categories, scopes. Measured on a quiet box 2026-09-23: 17.6-20.7 tok/s. The bf16 was NOT re-measured in that run; its figure is the production telemetry median, 8.6 tok/s over 174 rows (measurements.jsonl, 2026-09-25) -- the '6.5' cited here until 2026-09-25 had no measurement behind it. 16.7 GB resident against 54. Same weights as Q16 at lower precision, so Q4 must not review Q16's work either -- that stays with Claude.",
+   "_was": "qwen3.8:27b-mtp-bf16 (Q16) until 2026-09-23",
+   "tools": {
+    "read_file": true,
+    "search_repo": true,
+    "search_tasks": true,
+    "commits_since": true,
+    "agent_status": true,
+    "dispatch_coder": true,
+    "escalate": true,
+    "note_task": true,
+    "hold_task": true,
+    "run_command": true,
+    "write_file": true,
+    "edit_file": true,
+    "web_fetch": true,
+    "web_search": true
+   },
+   "tasks": [
+    {
+     "task": "building",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "scoping",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "assigned_items",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "script_review",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "script_audit",
+     "interrupt": false,
+     "series": 0,
+     "max_lanes": 1
+    },
+    {
+     "task": "preflight",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "session_review",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "rca",
+     "interrupt": false,
+     "series": 1,
+     "max_lanes": 1
+    },
+    {
+     "task": "console",
+     "interrupt": false
+    }
+   ],
+   "profile_by_task": {
+    "supervision": "supervisor (supervise.py settings.request('supervisor'))",
+    "triage": "chat (manager queue -> ask_q16 -> console)",
+    "scoping": "chat (manager_queue.sh -> ask_q16 -> console options('chat'))",
+    "console": "chat (console.py options('chat'))"
+   },
+   "attributes": {},
+   "skills": [
+    "never-truncate-a-record",
+    "planning-for-sustainment"
+   ],
+   "lanes": 4
+  },
+  "auditor": {
+   "name": "Auditor",
+   "kind": "model",
+   "model": "swift-junior:latest",
+   "what": "Q4 on the ThinkPad eGPU (ollama-thinkpad, 56k context, 100% GPU, 53.8 tok/s; Q4 on the GX10 measured 7.1 only because that Ollama had fallen back to the CPU after a bad restart -- re-bench on its GPU; measurements.jsonl 2026-10-12). Script review, RCA, session review -- the weakly-verified work, off Swift so the GX10 keeps scoping and building (MASTER-PLAN H, 2026-10-12). One lane: Ollama on Windows, one 17.5 GB model in 24 GB.",
+   "tools": {
+    "read_file": true,
+    "search_repo": true,
+    "search_tasks": true,
+    "commits_since": true,
+    "agent_status": true,
+    "dispatch_coder": true,
+    "escalate": true,
+    "note_task": true,
+    "hold_task": true,
+    "run_command": true,
+    "write_file": true,
+    "edit_file": true,
+    "web_fetch": true,
+    "web_search": true
+   },
+   "tasks": [
+    {
+     "task": "building",
+     "interrupt": false
+    },
+    {
+     "task": "assigned_items",
+     "interrupt": false
+    },
+    {
+     "task": "rca",
+     "interrupt": false
+    },
+    {
+     "task": "session_review",
+     "interrupt": false
+    },
+    {
+     "task": "script_review",
+     "interrupt": false
+    },
+    {
+     "task": "script_audit",
+     "interrupt": false
+    },
+    {
+     "task": "scoping",
+     "interrupt": false
+    },
+    {
+     "task": "preflight",
+     "interrupt": false
+    }
+   ],
+   "profile_by_task": {
+    "script_review": "coder (truncation_review.py settings.request('coder'))"
+   },
+   "attributes": {},
+   "lanes": 1
+  },
+  "coder": {
+   "name": "Frontline",
+   "kind": "model",
+   "model": "swift",
+   "what": "The production build lane. Jas's standing order: builds go to Gemma, Claude merges.",
+   "tools": {
+    "read_file": true,
+    "search_repo": true,
+    "search_tasks": true,
+    "commits_since": true,
+    "agent_status": false,
+    "dispatch_coder": false,
+    "escalate": false,
+    "note_task": true,
+    "hold_task": false,
+    "run_command": false,
+    "write_file": false,
+    "edit_file": false,
+    "web_fetch": false,
+    "web_search": false
+   },
+   "tasks": [
+    {
+     "task": "building",
+     "interrupt": false
+    }
+   ],
+   "profile_by_task": {
+    "building": "coder (coder.py options('coder'))"
+   },
+   "attributes": {},
+   "lanes": 0
+  },
+  "embedder": {
+   "name": "Embedder",
+   "kind": "model",
+   "model": "qwen3-embedding:0.6b",
+   "what": "memory.py recall and the corpus index. Ollama pins embedding runners to -np 1 regardless of OLLAMA_NUM_PARALLEL.",
+   "tools": {
+    "read_file": false,
+    "search_repo": false,
+    "search_tasks": false,
+    "commits_since": false,
+    "agent_status": false,
+    "dispatch_coder": false,
+    "escalate": false,
+    "note_task": false,
+    "hold_task": false,
+    "run_command": false,
+    "write_file": false,
+    "edit_file": false,
+    "web_fetch": false,
+    "web_search": false
+   },
+   "tasks": [
+    {
+     "task": "corpus_index",
+     "interrupt": false
+    }
+   ],
+   "profile_by_task": {},
+   "attributes": {},
+   "lanes": 0
+  },
+  "dsh": {
+   "name": "DeepSeek Harness",
+   "kind": "agent",
+   "signature": "DSH - <model>",
+   "what": "Used when Claude's usage runs out. No tasks enabled until Jas chooses them; Merge review stays off so it cannot merge by accident.",
+   "tasks": [
+    {
+     "task": "assigned_items",
+     "interrupt": false
+    },
+    {
+     "task": "merge_review",
+     "interrupt": false
+    },
+    {
+     "task": "merged",
+     "interrupt": false
+    },
+    {
+     "task": "done_check",
+     "interrupt": false
+    },
+    {
+     "task": "direct_commit",
+     "interrupt": false
+    }
+   ],
+   "trailers": [
+    "dsh-harness",
+    "dsh"
+   ],
+   "skills": [
+    "dsh-context-handoff",
+    "dsh-context-window",
+    "model-startup-context",
+    "never-truncate-a-record",
+    "planning-for-sustainment",
+    "local-model-loading"
+   ],
+   "tools": {
+    "read_file": true,
+    "search_repo": true,
+    "search_tasks": true,
+    "commits_since": true,
+    "agent_status": true,
+    "dispatch_coder": true,
+    "escalate": true,
+    "note_task": true,
+    "hold_task": true,
+    "run_command": true,
+    "write_file": true,
+    "edit_file": true,
+    "web_fetch": true,
+    "web_search": true
+   },
+   "escalations": [
+    "technical"
+   ]
+  }
+ },
+ "_escalation": {
+  "vision": 1,
+  "technical": 2,
+  "rework": 3
+ },
+ "lanes": {}
+}

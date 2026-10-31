@@ -1,0 +1,119 @@
+{
+ "_what": "Every machine (device) and every running inference engine (server) the workspace may call. Roles name MODELS (ROLES.json); this says where a model can be served. infer.py reads it on every call. Design: docs/ENGINES.md.",
+ "_adding_an_engine": "An OpenAI-compatible engine (vLLM, SGLang, llama-server, LM Studio, and most new ones) is one entry with \"engine\": \"openai\" and no code. Anything else needs one adapter class in infer.py.",
+ "devices": {
+  "gx10": {
+   "what": "ASUS GX10 (HiveMind): GB10, CPU and GPU share one unified pool",
+   "memory_gb": 121,
+   "reserve_gb": 8,
+   "host": "127.0.0.1"
+  },
+  "thinkpad": {
+   "what": "Lenovo ThinkPad (Windows) + RTX 5090 Laptop eGPU over Thunderbolt: 24 GB VRAM of its own, separate from the GX10's pool",
+   "memory_gb": 24,
+   "reserve_gb": 1.5,
+   "_reserve": "the Windows desktop holds ~1.4 GB of the eGPU with the monitor attached (nvidia-smi, 2026-10-12)",
+   "host": "192.0.2.2",
+   "ssh": {
+    "user": "user",
+    "key": "~/.ssh/thinkpad_gpu",
+    "_ssh": "Jas's key (t683, 2026-10-11), over the direct cable; read by scripts/thinkpad_guard.py and the Terminal tab (t1152)"
+   }
+  }
+ },
+ "servers": {
+  "ollama-main": {
+   "engine": "ollama",
+   "url": "http://127.0.0.1:11434",
+   "device": "gx10",
+   "what": "The system Ollama (ollama.service). Production's default server.",
+   "models": {
+    "qwen3-embedding:0.6b": {
+     "footprint_gb": 4.0,
+     "_footprint": "Measured 2026-10-06 via /api/ps: 4.0 GB resident with its 32768 context, against a 0.6 GB file."
+    }
+   },
+   "_models": "Only models whose footprint differs from the file-size estimate (size x 1.15) need an entry; the rest are discovered from /api/tags.",
+   "default": true,
+   "_default": "An unlisted model goes here, as every caller's direct post to :11434 did before infer existed.",
+   "_gpu": "2026-10-13 correction: this Ollama runs on the GPU. The 'skipping CUDA device ... cc=1210' line is its cuda_v12 library; cuda_v13 finds the GB10 right after it (library=CUDA compute=12.1) at almost every start. ONE start, 2026-10-12 00:52 local, came up library=cpu with ~25 GB free beside Swift -- GPU discovery failed under memory pressure -- and that process served the 7.1 tok/s bench. Restarted 15:44 local onto the GPU. A restart beside a full Swift can do this again: check `ollama ps` PROCESSOR after any restart."
+  },
+  "vllm-swift": {
+   "engine": "openai",
+   "url": "http://172.18.0.2:8000",
+   "url_from": "serve.endpoint",
+   "device": "gx10",
+   "models": {
+    "swift": {
+     "footprint_gb": 95,
+     "context": 262144,
+     "reasoning": {
+      "off": {
+       "enable_thinking": false
+      },
+      "low": {
+       "enable_thinking": true,
+       "reasoning_effort": "low"
+      },
+      "medium": {
+       "enable_thinking": true,
+       "reasoning_effort": "medium"
+      },
+      "high": {
+       "enable_thinking": true,
+       "reasoning_effort": "xhigh"
+      },
+      "max": {
+       "enable_thinking": true,
+       "reasoning_effort": "xhigh"
+      }
+     },
+     "_footprint": "Measured 2026-10-06: the engine pid holds 84,531 MiB, and MemAvailable fell by ~95 GB with the FP8 PLE prewarmed into page cache.",
+     "_reasoning": "Swift's chat template: reasoning_effort in xhigh|medium|low, default xhigh (the card's serving setting). think:true maps to xhigh.",
+     "job_budget": -1,
+     "_job_budget": "-1 = until done (Jas, 2026-10-06: 'Whatever the model supports, why not just increase it to that maximum?'). vLLM stops at the end of the reply or when the 262,144 window fills; a larger max_tokens than fits is a 400 from vLLM, so 'no limit' is the maximum. Ollama's reason for a cap (one slot: a runaway blocked everything) does not hold on vLLM, where a runaway holds one of 4 slots. The backstop is the queue's wall clock (ask_q16 --timeout 5400)."
+    }
+   },
+   "what": "vLLM serving Swift 1.5 (serve.py, container `swift`). Its bridge IP is read from docker at call time (url_from); the url above is the last one seen.",
+   "slots": 8,
+   "_slots": "The ENGINE CEILING = vLLM max_num_seqs 8 (serve.FLAGS seqs). It is no longer the lane count: since 2026-10-08 lanes belong to roles (Jas: 'add lanes for a role, not model'), set as Lanes on each role's Models-tab page, and modellease.slots = min(this, the sum of the lanes of the roles on this model). History: 4 -> 8 (2026-10-07), 8 -> 6 -> 1 (2026-10-08, after GPU-driver out-of-memory crashes); the 1 now lives on the Manager role as lanes: 1."
+  },
+  "ollama-station2": {
+   "engine": "ollama",
+   "url": "http://127.0.0.1:11435",
+   "device": "gx10",
+   "what": "The second Ollama (ollama-station2.service), the Senior station: same model store, its own memory and slot.",
+   "retired": "2026-10-06: unit disabled when Swift took every role. Kept so a job pointed at :11435 still resolves; the Models tab does not poll it."
+  },
+  "ollama-thinkpad": {
+   "engine": "ollama",
+   "url": "http://192.0.2.2:11434",
+   "device": "thinkpad",
+   "what": "Ollama 0.40.3 on the ThinkPad eGPU (MASTER-PLAN H). Q4 at 56k context, 100% GPU, 53.8 tok/s (measurements.jsonl, 2026-10-12). The GX10's 7.1 for the same Q4 (2026-10-12) was a CPU fallback after one bad restart, not the GPU; re-bench it there.",
+   "_url": "the DIRECT CABLE (192.0.2.2), since 2026-10-13: the ThinkPad's Wi-Fi card drops, and the tailnet (100.64.0.11) went with it while the models kept running. Opened that night: the cable network set to Private by Jas, and a Windows rule 'Ollama from GX10 (direct cable)' allowing TCP 11434 from 192.0.2.1 only.",
+   "models": {
+    "qwen3.8:27b-mtp-q4_K_M-56k": {
+     "footprint_gb": 17.5,
+     "_footprint": "size_vram == size = 17.53 GB at context 57344 via /api/ps, 2026-10-12. 60k and 64k crash the runner ('CUDA error: shared object initialization failed' = VRAM exhausted on this Windows build), so -56k is the largest that fits.",
+     "context": 57344
+    },
+    "gemma4:26b": {
+     "footprint_gb": 18.9,
+     "context": 65536,
+     "_footprint": "MEASURED 2026-10-15 on the eGPU via nvidia-smi: 20,824 MiB used at num_ctx 65536 (20,120 at 32768) against a ~2.8 GB idle baseline, so ~18.9 GB for the model; 100% GPU, 82.3 tok/s, ThinkPad RAM 6.74 GB free. Ollama 0.40.3's /api/ps `size` reads ~1.0 GB for this model -- do not trust it as a footprint. Weights copied from the GX10 over the cable (same pinned digest), not pulled. Frontline lives here (Jas 2026-10-15: 'The frontline needs to be in the ThinkPad regardless of model choice')."
+    },
+    "gemma4:e4b": {
+     "footprint_gb": 3.5,
+     "context": 65536,
+     "_footprint": "MEASURED 2026-10-13 on the eGPU: size_vram 3.42 GB at 32768, 3.49 GB at 65536 (100% GPU); the ThinkPad's free RAM moved 7.33 -> 7.15 GB with it loaded. (Before Ollama was restarted with the Nvidia GPU forced in Windows graphics settings, it loaded on the CPU at 10.1 GB.)"
+    },
+    "swift-junior:latest": {
+     "footprint_gb": 18.2,
+     "context": 57344,
+     "_footprint": "size_vram == size = 18.16 GB at context 57344 via /api/ps, 2026-10-22 (nvidia-smi 21,359 of 24,463 MiB used with the embedder loaded). Built by Jas from hf.co/ukisai/Swift-1.5-Qwen3.8-27B-GGUF:Q4_K_M; Q6_K (23.9 GB) cannot fit this 24 GB card with context."
+    }
+   },
+   "_models": "Listed so infer.resolve routes this tag here; Ollama discovers the rest from /api/tags."
+  }
+ }
+}

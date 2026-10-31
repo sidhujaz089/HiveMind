@@ -1,0 +1,25 @@
+{
+ "_what": "How the Models tab labels and limits a role's attributes, per model family (Jas, 2026-09-29: the fields 'should reflect the model's design'). Whether a model can think at all comes from Ollama's /api/show capabilities, never from here; this file only says what the family CALLS it and which values it takes, with the source.",
+ "families": {
+  "qwen": {"name": "Qwen", "match": ["qwen"],
+           "source": "Qwen3.8 model card (https://huggingface.co/Qwen/Qwen3.8-27B): reasoning effort levels; settings.py coder profile note: 'high' measured to return done=stop, 2026-09-12",
+           "fields": {"think": {"label": "Reasoning effort", "kind": "choice", "choices": ["off", "low", "medium", "high", "max"],
+                               "help": "Reasoning tokens come out of the same budget as the reply (see 'Longest reply'). Higher effort: better judgement, slower, and needs a bigger reply budget."}}},
+  "gemma": {"name": "Gemma", "match": ["gemma"],
+            "source": "Gemma 4 model card (https://ai.google.dev/gemma/docs/core/model_card_4); settings.py 2026-09-14: think=high and think=low both answered on gemma4:26b",
+            "fields": {"think": {"label": "Thinking", "kind": "choice", "choices": ["off", "low", "high"],
+                                "help": "Measured 2026-09-14: 'high' took 18.8 s and 'low' 1.2 s for the same one-word answer. With thinking on, a small reply budget can come back empty."}}}
+ },
+ "unprofiled_think": {"label": "Thinking (no profile for this family yet)", "kind": "choice", "choices": ["off", "low", "medium", "high"],
+                      "help": "Ollama says this model can think, but nobody has written its family's profile yet; these are Ollama's generic levels."},
+ "common": {
+  "num_ctx": {"label": "Context window (tokens)", "kind": "number", "min": 1024, "max": "trained_context",
+              "help": "Everything the model holds at once: the prompt, the files, and its reply. Bigger costs memory and start-up time."},
+  "num_predict": {"label": "Longest reply before it must stop (tokens)", "kind": "number", "min": 256, "max": 262144,
+                  "help": "Includes reasoning tokens. -1 means no limit."},
+  "temperature": {"label": "Temperature", "kind": "number", "min": 0, "max": 2, "step": 0.05,
+                  "help": "Blank = the model card's own value (recommended). 0 = the same answer every time."},
+  "keep_alive": {"label": "Keep loaded after use", "kind": "choice", "choices": ["5m", "30m", "1h", "4h", "24h", "-1"],
+                 "help": "-1 keeps it in memory until something else needs the room."}
+ }
+}

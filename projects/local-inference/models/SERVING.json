@@ -1,0 +1,31 @@
+{
+  "_what": "THE MODELS THIS BOX ACTUALLY USES, by the job they do. One dynamic source, read at runtime -- not a list anybody hand-syncs. Swapping a model is a one-line edit here and it reaches every caller.",
+  "_why": "Jas, 2026-09-18: 'I want whatever the configuration is to be model agnostic. I plan to experiment with many local models, so I don't want to constrain it. If it's possible to have some way for it to point to a dynamic variable to get that information, that's the best.' REGISTRY.json answers a different and still-useful question -- what a tag IS, pinned by digest, so measurements recorded under a name describe the weights that produced them. It was ALSO being used as the list of models that exist, and that is the half that kept going stale: `ollama pull qwen3.8` mints a `:latest` alias and the check went red until somebody hand-edited JSON. A registry is the right shape for 'what do we trust'; it is the wrong shape for 'what is on this box this week'.",
+  "_the_rule_this_replaces": "'Every model on this box is declared' -- a closed-world list over a directory Jas experiments in, so every experiment was a failed check. The rule now is 'every model we USE resolves a sampling profile and a pinned digest', which is about the four tags below and says nothing about the rest. An undeclared tag nobody serves is not a defect; it is a model somebody is trying out.",
+  "_adding_a_model": "python3 scripts/models.py adopt <tag>   (declares it and locks its digest)\npython3 scripts/models.py drop <tag>    (removes the declaration; does not touch the box)",
+  "roles": {
+    "manager": {
+      "tag": "swift",
+      "what": "Q4 (Jas, 2026-09-23: 'after the swap Q4 does all of Q16's work'). Supervises, reviews briefs, assigns failure categories, scopes. Measured on a quiet box 2026-09-23: 17.6-20.7 tok/s. The bf16 was NOT re-measured in that run; its figure is the production telemetry median, 8.6 tok/s over 174 rows (measurements.jsonl, 2026-09-25) -- the '6.5' cited here until 2026-09-25 had no measurement behind it. 16.7 GB resident against 54. Same weights as Q16 at lower precision, so Q4 must not review Q16's work either -- that stays with Claude.",
+      "_was": "qwen3.8:27b-mtp-bf16 (Q16) until 2026-09-23"
+    },
+    "auditor": {
+      "tag": "swift-junior:latest",
+      "what": "Q4 on the ThinkPad eGPU (ollama-thinkpad, 56k context, 100% GPU, 53.8 tok/s; Q4 on the GX10 measured 7.1 only because that Ollama had fallen back to the CPU after a bad restart -- re-bench on its GPU; measurements.jsonl 2026-10-12). Script review, RCA, session review -- the weakly-verified work, off Swift so the GX10 keeps scoping and building (MASTER-PLAN H, 2026-10-12). One lane: Ollama on Windows, one 17.5 GB model in 24 GB."
+    },
+    "coder": {
+      "tag": "swift",
+      "what": "The production build lane. Jas's standing order: builds go to Gemma, Claude merges."
+    },
+    "embedder": {
+      "tag": "qwen3-embedding:0.6b",
+      "what": "memory.py recall and the corpus index. Ollama pins embedding runners to -np 1 regardless of OLLAMA_NUM_PARALLEL."
+    }
+  },
+  "production_lanes": [
+    "manager",
+    "auditor"
+  ],
+  "_production_lanes_note": "Which roles the scheduler may dispatch production work to, in order. dispatch_loop reads this rather than carrying its own copy; the two lists disagreed by construction before 2026-09-22 because nothing made them agree.",
+  "_roles_generated": "GENERATED from ROLES.json by scripts/role_store.py -- do not edit here; edit the role store (Models tab, or role_store.py), which rewrites this block."
+}

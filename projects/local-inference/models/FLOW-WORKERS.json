@@ -1,0 +1,66 @@
+{
+ "_generated": "GENERATED from ROLES.json by scripts/role_store.py on every save -- do not edit. It is the chart's projection of who works each stage (t1594).",
+ "workers": {
+  "assigned_claude": [
+   "claude"
+  ],
+  "assigned_items": [
+   "auditor",
+   "dsh",
+   "manager"
+  ],
+  "assigned_jas": [
+   "jas"
+  ],
+  "building": [
+   "auditor",
+   "coder",
+   "manager"
+  ],
+  "console": [
+   "manager"
+  ],
+  "corpus_index": [
+   "embedder"
+  ],
+  "direct_commit": [
+   "claude",
+   "dsh"
+  ],
+  "done_check": [
+   "claude",
+   "dsh"
+  ],
+  "merge_review": [
+   "claude",
+   "dsh"
+  ],
+  "merged": [
+   "dsh"
+  ],
+  "preflight": [
+   "auditor",
+   "manager"
+  ],
+  "rca": [
+   "auditor",
+   "manager"
+  ],
+  "scoping": [
+   "auditor",
+   "manager"
+  ],
+  "script_audit": [
+   "auditor",
+   "manager"
+  ],
+  "script_review": [
+   "auditor",
+   "manager"
+  ],
+  "session_review": [
+   "auditor",
+   "manager"
+  ]
+ }
+}

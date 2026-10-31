@@ -1,0 +1,2838 @@
+{
+  "_blame": {
+    "_what": "Jas, 2026-10-25: every failure is the worker's output being rejected, the harness failing, or a record that was wrong. This maps the mature four-way taxonomy above onto those words so a count can answer \"are the bugs holding the agents back?\" without a second vocabulary. EXTERNAL IS KEPT APART on purpose -- collapsing a restart or a disconnect into harness-fault would send a model chasing a bug that does not exist, which is the costliest misattribution this file could make.",
+    "content": "worker-output-rejected",
+    "harness-capability": "harness-fault",
+    "environment-precondition": "harness-fault",
+    "stale-record": "stale-record",
+    "external": "external"
+  },
+  "_what": "The mechanical record of the two schemas Jas ordered 2026-09-20 — how a SCOPE must read a task and how a BRIEF must specify work — grown one entry per MEASURED failure. A failure that is not in this file is one the next scope and brief can repeat; an entry here is one they must address. 'Every failure creates a mechanical part of the schema so there is self improvement and less repetitive failures.'",
+  "_grows_by": "The coder failure path (t366 build) appends a row mechanically on every failed attempt. A worker session may append with evidence lines. Entries are never deleted; a defense that stops being needed is marked retired with the date, not erased.",
+  "_cause_categories": {
+    "_why": "The routing decision, made explicit. Until 2026-09-22 only two of these had names — and the one that had none, harness-capability, is where fourteen briefs went wrong: dispatch_loop.futile() had no category for 'the harness could not do it', so it used the one it had and told every future reader the briefs were at fault. A taxonomy with a missing row does not produce a gap, it produces a misfiling. Every entry in `failures` carries a cause_category, and the category decides what happens next WITHOUT anyone reasoning about it.",
+    "content": "The scope or the brief is genuinely wrong. Note the reason on the task, move it to the FRONT of the queue, re-scope. The only category where the brief is edited.",
+    "external": "Something outside the work ended it — a restart, a disconnect, a machine event. Attribute it, retry ONCE, do not re-scope. The brief was never reached.",
+    "harness-capability": "The tooling or the model could not perform the mechanics, independent of what was asked. Repair the harness and re-dispatch the chunk UNCHANGED. Never edit the brief; never retry the same model against the same wall. Added 2026-09-22.",
+    "environment-precondition": "A gate refused before any work began — an undeclared red suite, a busy slot, a missing registration. Nothing failed; something was not ready. Satisfy the precondition and re-dispatch. Added 2026-09-22.",
+    "stale-record": "The RECORD was wrong and the work may have been fine. Added 2026-10-25 at Jas's \"failure classes\" instruction: the p487 lane sat 'never closed' for eleven days because its finish rows carried each other's pids; eleven guard-self-test probes sat in the queue after crashed runs; a lane was closed late. The rule: repair the WRITER that made the record wrong, and do not re-dispatch the work -- nothing failed.",
+  "_routing_rule": "A worker that hits a failure records it and stops; the Manager assigns the category. See docs/skills/root-cause-analysis, Rule 0 — the reporter does not diagnose — and Rule 5 for where the resulting fix lands."
+  },
+  "scope": {
+    "required": [
+      "goal_link: which of Jas's aims this task serves (read the plan's context, not just the title)",
+      "best_way: is this task the best way to get there? if a better approach exists -> NEEDS_JAS with the feedback ON THE TASK's notes (never a silent rejection)",
+      "related: the whole task list was scanned for items that could be DONE-TOGETHER; any found are raised in priority and named here",
+      "oracle: source + target suite + fail-first evidence (it was run against the current code and went red for the right reason)"
+    ],
+    "judgement_standard": "the big picture: how things actually work, where the future state is going, industry best practices, established standards. Even a fully-specified task gets this pass. Re-scoping may push back to Jas again with more feedback — the notes are a conversation, not a form.",
+    "owner": "the scoper (t367 builds this into its prompt)"
+  },
+  "brief": {
+    "required": [
+      "single_change: ONE change, one file unless the change IS the relationship",
+      "what_is_wrong and why",
+      "done_when: the target suite goes GREEN, not merely stays unbroken",
+      "frozen_oracle_ref: the test it is pinned by (frozen — the implementer cannot edit it); if the oracle is new or red, it is ALREADY declared in workspace/test-failures-ceiling.json or workspace/sandbox-baseline.json",
+      "related_entries: which failure-schema entries this brief is engineered to survive",
+      "symbols: when the brief's FILES would not fit the model's window together with an answer, the brief names the functions/classes to edit on a `SYMBOLS:` line (coder.py shows only those, and refuses NEEDS-SCOPE before any attempt when the prompt cannot fit) -- entry window-full",
+      "behaviour_oracle: a compliance brief (one that removes a library finding) says what the code must still DO, and its oracle checks that behaviour, not only that the finding is gone -- entry check-satisfied-by-dead-path"
+    ],
+    "attempt_policy": "ONE attempt (Jas 2026-09-20). No blind retries: the loop 'seems like it loops' — the same wrong input retried four times. After 1 failure the REASON is written to the task's notes mechanically and the task goes to the FRONT of the queue to be re-scoped, and the re-scope writes a BETTER scope + brief that addresses the recorded failure. The attempt budget itself is a schema field, because a budget that hides a systematic mistake is part of the mistake."
+  },
+  "failures": [
+    {
+      "class": "preempted-by-priority-layer",
+      "cause_category": "environment-precondition",
+      "instances": [
+        {
+          "at": "2026-09-20T14:30:03Z",
+          "chunk": "p45/t359 (attempt 1)"
+        }
+      ],
+      "reason": "the loop's priority layer preempted an out-of-band build for 5 queued level-3 script-review requests and then started NONE of them — the model was held by a live-session step, so the preemption freed nothing and killed the work",
+      "evidence": "dispatch-loop.jsonl 14:30:03Z {event:preempted, pid:1741823, model:qwen3.8:27b-mtp-bf16} + {tick, started:0, queued:5x script-review 'interrupting production'}; the same failure mode is documented in the loop's own 00:20:03Z comment",
+      "defense": "out-of-band dispatches run under scheduler_commands.pause (sanctioned flag). The loop-side half (don't preempt what you cannot start; surface the priority lane) is t324's visibility work."
+    },
+    {
+      "class": "baseline-refusal-undeclared",
+      "cause_category": "environment-precondition",
+      "instances": [
+        {
+          "at": "2026-09-20",
+          "chunk": "p45/t359 (attempt 2)"
+        },
+        {
+          "at": "2026-10-01T20:59:17Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T21:12:15Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T21:18:25Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T21:28:07Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T21:35:46Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T21:49:02Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T21:59:44Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:04:24Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:13:53Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:20:33Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:31:38Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:33:55Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:36:43Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:39:29Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:41:44Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:43:40Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-01T22:47:27Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-02T01:39:50Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-02T01:50:22Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-02T02:10:20Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-02T19:33:13Z",
+          "chunk": "p242-t647-reviewq",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-03T00:00:34Z",
+          "chunk": "p250-t648-manager-prompt",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-03T04:35:31Z",
+          "chunk": "p248-t401-task-sessions",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-03T15:56:47Z",
+          "chunk": "p260-t618-ollama-settings",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-07T01:10:40Z",
+          "chunk": "p284-t656-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-07T14:38:21Z",
+          "chunk": "p300-t718-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-07T21:24:59Z",
+          "chunk": "p300-t718-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T00:37:41Z",
+          "chunk": "p288-t712-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T08:08:14Z",
+          "chunk": "p289-t255-publish",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T08:24:20Z",
+          "chunk": "p306-t799-failure-schema",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T12:50:44Z",
+          "chunk": "p313-t941-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T13:20:25Z",
+          "chunk": "p313-t941-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T20:32:51Z",
+          "chunk": "p321-t789-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T23:59:20Z",
+          "chunk": "p304-t762-session-end",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-08T23:59:20Z",
+          "chunk": "p332-t768-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-09T00:12:12Z",
+          "chunk": "p302-t732-scope-lint",
+          "evidence": "workspace/sandbox-baseline.json        the sandbox cannot run it"
+        },
+        {
+          "at": "2026-10-09T00:34:44Z",
+          "chunk": "p304-t762-session-end",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p304-t762-session-end--production--swift--1791505890.log: showing the first 3000 of 3020 characters; 20 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        }
+      ],
+      "reason": "the sandbox baseline runs every suite and refuses to start when a red is missing from the two declaration lists — the NEW red-by-design oracle and two pre-existing reds were all undeclared",
+      "evidence": "coder output: 'REFUSING TO START -- the sandbox baseline is not what is declared: undeclared failure: test_inference_busy.py / test_notify.py / test_scope_taxonomy.py'",
+      "defense": "when a fail-first oracle is written, it is declared (test-failures-ceiling.json, _oracles_awaiting_their_fix) in the SAME commit as the brief. A brief that ships a new red test without its declaration is incomplete."
+    },
+    {
+      "class": "remote-disconnected-external-restart",
+      "cause_category": "external",
+      "instances": [
+        {
+          "at": "2026-09-20",
+          "chunk": "p45/t359 (attempt 3)"
+        },
+        {
+          "at": "2026-10-10T08:08:55Z",
+          "chunk": "p334-t765-failure-schema",
+          "evidence": "attempt 3 … connection dropped (RemoteDisconnected) -- retrying this attempt on"
+        },
+        {
+          "at": "2026-10-18T03:43:19Z",
+          "chunk": "p673-t1257-run-tests",
+          "evidence": "attempt 4 … connection dropped (RemoteDisconnected) -- retrying this attempt once in 30 s … ERROR NoServer: 'swift' is offered by vllm-swift, and none answers"
+        },
+        {
+          "at": "2026-10-19T08:29:08Z",
+          "chunk": "p758-t1490-test-flow-model-tasks",
+          "evidence": "attempt 3 … connection dropped (RemoteDisconnected) -- retrying this attempt once in 30 s … ERROR NoServer: 'swift' is offered by vllm-swift, and none answers"
+        }
+      ],
+      "reason": "Jas's Ollama restart (the KEEP_ALIVE unit edit) landed mid model-call; the connection died server-side",
+      "evidence": "coder stderr 'ERROR RemoteDisconnected: Remote end closed connection without response'; serve pid 1326260 -> 1871005 in the same window",
+      "defense": "this cause is not the model's or the brief's — re-dispatch, do not re-scope. The re-scope machinery must DISTINGUISH external-cause failures (attribute, retry once) from content failures (note, front, re-scope)."
+    },
+    {
+      "class": "concurrent-dispatch-starvation",
+      "cause_category": "environment-precondition",
+      "instances": [
+        {
+          "at": "2026-09-20",
+          "chunk": "p45/t359 (attempt 4)"
+        },
+        {
+          "at": "2026-09-20",
+          "chunk": "p33/t317 (attempt 1)"
+        },
+        {
+          "at": "2026-09-20",
+          "chunk": "p34 (attempt 1)"
+        }
+      ],
+      "reason": "three concurrent coder dispatches on the single slot (-np 1), each carrying a solo-sized settings.timeout_for() budget derived from measured decode rates; each call queued behind the other dispatches' decodes plus the live session's steps and timed out on the WAIT, not the work. Retrying the same three in parallel would reproduce it exactly — which is the loop Jas forbade",
+      "evidence": "coder outputs: 'attempt 1 … ERROR TimeoutError: timed out' for all three; the BUSY note each logged: '4 coder.py dispatch(es) are running. llama-server is -np 1, so they hold the slot and a probe queues behind them. A new dispatch will queue too and take longer than usual.'",
+      "defense": "dispatch to a single slot SEQUENTIALLY until t361 lands (-np >= 4); a brief's related_entries must name this class whenever the box is at one slot; the 1-attempt policy converts this from a four-blind-retry burn into one recorded failure."
+    },
+    {
+      "class": "harness-edit-application",
+      "cause_category": "harness-capability",
+      "instances": [
+        {
+          "at": "2026-09-16",
+          "chunk": "p41-comply-chatui-fixed-tmp-path"
+        },
+        {
+          "at": "2026-09-16",
+          "chunk": "p13-cap-duoverify"
+        },
+        {
+          "at": "2026-09-16",
+          "chunk": "p17-hold-menu"
+        },
+        {
+          "at": "2026-09-16",
+          "chunk": "p34-comply-run-model-call-outside-contract (7 rounds)"
+        },
+        {
+          "at": "2026-09-16",
+          "chunk": "p20, p14, p18, p19, p23, p24, p27, p33, p42, p44"
+        },
+        {
+          "at": "2026-10-02T23:53:52Z",
+          "chunk": "p239-t502-scope-lint",
+          "evidence": "attempt 5 … python syntax (18233 tok, 873s)"
+        },
+        {
+          "at": "2026-10-03T05:34:27Z",
+          "chunk": "p248-t401-task-sessions",
+          "evidence": "attempt 4 … unusable (no ops, 6246 tok, 305s)"
+        },
+        {
+          "at": "2026-10-03T06:39:10Z",
+          "chunk": "p249-t401-feedback",
+          "evidence": "attempt 7 … asked for 1 file(s), gave 0 new (1758 tok, 69s)"
+        },
+        {
+          "at": "2026-10-08T04:32:47Z",
+          "chunk": "p285-t645-probe",
+          "evidence": "attempt 6 … asked for 2 file(s), gave 0 new (234 tok, 25s)"
+        },
+        {
+          "at": "2026-10-08T17:17:28Z",
+          "chunk": "p309-t806-guard-process-waits",
+          "evidence": "attempt 7 … asked for 2 file(s), gave 0 new (189 tok, 9s)"
+        },
+        {
+          "at": "2026-10-08T17:43:32Z",
+          "chunk": "p308-t805-run-tests",
+          "evidence": "attempt 7 … asked for 2 file(s), gave 0 new (240 tok, 9s)"
+        },
+        {
+          "at": "2026-10-08T19:53:25Z",
+          "chunk": "p314-t800-flow-coverage",
+          "evidence": "attempt 5 … asked for 2 file(s), gave 0 new (200 tok, 9s)"
+        },
+        {
+          "at": "2026-10-08T20:09:00Z",
+          "chunk": "p315-t800-check-workspace",
+          "evidence": "attempt 5 … asked for 2 file(s),"
+        },
+        {
+          "at": "2026-10-08T20:23:46Z",
+          "chunk": "p318-t798-guard-task-writes",
+          "evidence": "attempt 4 … asked for 3 file(s), gave"
+        },
+        {
+          "at": "2026-10-08T21:30:22Z",
+          "chunk": "p309-t806-guard-process-waits",
+          "evidence": "attempt 2 … asked for 3 file(s), gave 0 new (201 tok, 12s)"
+        },
+        {
+          "at": "2026-10-08T22:26:40Z",
+          "chunk": "p325-t781-askmemory",
+          "evidence": "attempt 4 … asked for 2 file(s), gave 0 new (889 tok, 43s)"
+        },
+        {
+          "at": "2026-10-08T23:54:23Z",
+          "chunk": "p327-t778-session-review",
+          "evidence": "attempt 4 … asked f"
+        },
+        {
+          "at": "2026-10-09T00:50:57Z",
+          "chunk": "p302-t732-scope-lint",
+          "evidence": "attempt 3 …"
+        },
+        {
+          "at": "2026-10-09T01:19:54Z",
+          "chunk": "p332-t768-scope-lint",
+          "evidence": "attempt 2 … asked for 2 file(s), gave 0 new (230 tok, 16s)"
+        },
+        {
+          "at": "2026-10-09T14:22:46Z",
+          "chunk": "p304-t762-session-end",
+          "evidence": "attempt 2 … asked for 2 file(s), gave 0 new (259 tok, 32s)"
+        },
+        {
+          "at": "2026-10-09T15:16:22Z",
+          "chunk": "p336-t764-check-stale-services",
+          "evidence": "attempt 4 … asked for"
+        },
+        {
+          "at": "2026-10-09T17:12:12Z",
+          "chunk": "p338-t761-role-store",
+          "evidence": "attempt 3 … asked for 2 file(s), gave 0 new (325 tok, 43s)"
+        },
+        {
+          "at": "2026-10-09T18:11:06Z",
+          "chunk": "p295-t704-backup-corpora",
+          "evidence": "attempt 4 … ACCEPTED (3 op(s) applied, 5190 tok, 310s)"
+        },
+        {
+          "at": "2026-10-09T18:48:47Z",
+          "chunk": "p296-t690-backup-corpora",
+          "evidence": "attempt 2 … asked for 2 file(s), gave 0 new (249 tok, 19s)"
+        },
+        {
+          "at": "2026-10-09T19:45:48Z",
+          "chunk": "p298-t361-modellease",
+          "evidence": "attempt 1 … asked for 3 file(s), gave 3 new (257"
+        },
+        {
+          "at": "2026-10-09T22:47:59Z",
+          "chunk": "p345-t1004-coder",
+          "evidence": "attempt 7 … asked for 2 file(s), gave 0 new (319 tok, 9s)"
+        },
+        {
+          "at": "2026-10-09T23:01:34Z",
+          "chunk": "p346-t812-flow-change",
+          "evidence": "attempt 7 … asked for 2 file(s), gave 0 new (335 tok, 20s)"
+        },
+        {
+          "at": "2026-10-10T05:04:16Z",
+          "chunk": "p302-t732-scope-lint",
+          "evidence": "attempt 7 … refused (lines 37-41 cut a multi-line str"
+        },
+        {
+          "at": "2026-10-10T08:08:45Z",
+          "chunk": "p315-t800-check-workspace",
+          "evidence": "attempt 4 … asked fo"
+        },
+        {
+          "at": "2026-10-10T17:04:14Z",
+          "chunk": "p366-t989-coder",
+          "evidence": "attempt 1 … asked"
+        },
+        {
+          "at": "2026-10-14T03:07:45Z",
+          "chunk": "p472-t1069-console",
+          "evidence": "attempt 5 … python syntax (2138 tok, 23s)"
+        },
+        {
+          "at": "2026-10-14T03:08:29Z",
+          "chunk": "p486-t1088-library",
+          "evidence": "attempt 6 … python syntax (223 tok, 2s)"
+        },
+        {
+          "at": "2026-10-15T23:40:15Z",
+          "chunk": "p523-t730-error-scan",
+          "evidence": "attempt 7 … unusable (no JSON object in the reply, 33309 tok, 232s)"
+        },
+        {
+          "at": "2026-10-17T17:02:40Z",
+          "chunk": "p638-t1139-session-review",
+          "evidence": "attempt 7 … asked for 1 file(s), gave 0 new (839 tok, 14s)"
+        },
+        {
+          "at": "2026-10-17T17:21:50Z",
+          "chunk": "p613-t1159-preflight-brief",
+          "evidence": "attempt 6 … python syntax (2854 tok, 46s)"
+        },
+        {
+          "at": "2026-10-17T20:26:03Z",
+          "chunk": "p619-t1214-session-review",
+          "evidence": "attempt 6 … ACCEPTED (3 op(s) applied, 7057 tok, 286s)"
+        },
+        {
+          "at": "2026-10-17T21:07:05Z",
+          "chunk": "p656-t1224-role-store",
+          "evidence": "attempt 4 … unusable (no JSON object in the reply, 9504 tok, 251s)"
+        },
+        {
+          "at": "2026-10-18T05:42:25Z",
+          "chunk": "p679-t1267-runledger",
+          "evidence": "attempt 6 … python syntax (1733 tok, 67s)"
+        },
+        {
+          "at": "2026-10-18T12:07:11Z",
+          "chunk": "p687-t1314-session-review",
+          "evidence": "attempt 5 … ACCEPTED (3 op(s) applied, 14001 tok, 637s)"
+        },
+        {
+          "at": "2026-10-18T16:37:35Z",
+          "chunk": "p692-t1322-flow-layout",
+          "evidence": "attempt 6 … python syntax (11200 tok, 168s)"
+        },
+        {
+          "at": "2026-10-18T17:30:57Z",
+          "chunk": "p696-t1340-dispatch-loop",
+          "evidence": "attempt 7 … asked for 1 file(s), gave 0 new (1843 tok, 101s)"
+        },
+        {
+          "at": "2026-10-18T19:50:28Z",
+          "chunk": "p740-t1425-coder",
+          "evidence": "attempt 7 … asked for 1 file(s), gave 0 new (23800 tok, 540s)"
+        },
+        {
+          "at": "2026-10-18T21:52:40Z",
+          "chunk": "p745-t1437-session-review",
+          "evidence": "attempt 7 … asked for 1 file(s), gave 0 new (336 tok, 6s)"
+        },
+        {
+          "at": "2026-10-19T02:15:47Z",
+          "chunk": "p749-t1442-role-store",
+          "evidence": "attempt 5 … unusable (no ops, 1517 tok, 131s)"
+        },
+        {
+          "at": "2026-10-19T10:41:03Z",
+          "chunk": "p755-t1463-coder",
+          "evidence": "attempt 7 … refused (no such file: projects/local-inference/coder.py, 18837 tok, 851s)"
+        },
+        {
+          "at": "2026-10-21T05:46:24Z",
+          "chunk": "p755-t1463-coder",
+          "evidence": "attempt 7 … python syntax (21425 tok, 955s)"
+        },
+        {
+          "at": "2026-10-21T13:56:53Z",
+          "chunk": "p613-t1159-preflight-brief",
+          "evidence": "attempt 3 … refused (anchor not found in scripts/preflight_brief.py."
+        },
+        {
+          "at": "2026-10-21T15:42:08Z",
+          "chunk": "p541-t1113-coder",
+          "evidence": "attempt 7 … unusable (no JSON object in the reply, 1613 tok, 51s)"
+        }
+      ],
+      "reason": "gemma4:26b cannot reliably APPLY an edit, which is a different thing from not understanding the task. Four shapes, one capability: an anchor string that does not literally match the file ('refused (anchor not found in ...)'); an edit that runs past the 16000-token output cap mid-file and then fails its resume-from-reasoning; indentation mangled on a line-range edit ('BAD-SYNTAX unindent does not match any outer indentation level'); and the file re-emitted unchanged ('gave 0 new, 1 repeat'). The briefs were correct. Fourteen of them were held anyway.",
+      "evidence": "job logs under workspace/run-logs/dispatch/: p41 chatui.py:782, p13 duo_verify.py:160, p17 feedback.py:1464 (BAD-SYNTAX); p17 and p13 'truncated at the limit (16000 tok)'; p34 seven attempts of 'gave 0 new, 1 repeat'. Filed INDEPENDENTLY by Q16 as t344-t351 ('harness output token limit too low', 'harness line-range edit mangles indentation'), committed 552e588. Two readings, same conclusion.",
+      "defense": "THIS IS THE THIRD CAUSE CATEGORY, and its absence is what made the misattribution possible. The remote-disconnected entry above names only two -- external-cause (attribute, retry once) and content (note, front, re-scope) -- so a capability failure had nowhere to go and dispatch_loop.futile() filed it as content: 'The brief or its oracle is the thing to fix -- edit the brief to release it.' That message sent the next session to rewrite fourteen correct briefs. A harness-capability failure is NEITHER: the brief is not touched and the model is not retried; the HARNESS is repaired and the chunk re-dispatched unchanged. Upstream defense, per Jas 2026-09-22: the scoper verifies at SCOPE time that every anchor a brief names is locatable in its target file -- one file read, before a model is loaded at all -- so an unappliable brief never reaches a coder. Gemma does not diagnose this; it reports and stops (see docs/skills/root-cause-analysis, Rule 0)."
+    },
+    {
+      "class": "swallowed-exception-introduced",
+      "cause_category": "content",
+      "instances": [
+        {
+          "at": "2026-09-22",
+          "chunk": "dispatch_loop.py pause-tick row (claude-code)"
+        },
+        {
+          "at": "2026-09-22",
+          "chunk": "check_workspace.py headroom check (claude-code)"
+        },
+        {
+          "at": "2026-09-22",
+          "chunk": "check_workspace.py main-checkout resolve (claude-code)"
+        }
+      ],
+      "reason": "the most frequently hit gate on this box, three times in one session by ONE worker. Any change that reads a file, parses a line or shells out grows an `except X: pass` by reflex, and pre-commit blocks the commit. It is a content failure and a cheap one — but only if the brief says so up front, because the alternative is discovering it after the work is written and reaching for --no-verify.",
+      "evidence": "COMMIT BLOCKED -- NEW swallowed-exception in scripts/dispatch_loop.py:1054; scripts/check_workspace.py:1038 `except ValueError: continue`; scripts/check_workspace.py:130 `except OSError: pass`. library_checks.py CHECKS['swallowed-exception'], severity block.",
+      "defense": "a brief that touches I/O, parsing or subprocess states the shape up front: the handler RECORDS what it caught — into the row, the ledger or the printed detail — and never merely continues. The repository's own worked examples: the torn-ledger counter in check_review_gate, and `flag_unreadable` on the paused-tick row. 'Fix the content, do not pass --no-verify' is the gate's own instruction and it is correct."
+    },
+    {
+      "class": "oracle-blocked-by-its-own-gate",
+      "cause_category": "harness-capability",
+      "instances": [
+        {
+          "at": "2026-09-22",
+          "chunk": "scripts/tests/test_library.py"
+        }
+      ],
+      "reason": "a fixture that proves a defect is caught HAS to contain that defect, so a gate which scans staged files refuses the very oracle the brief was asked to write. test_library.py had been uncommittable by anyone since its fixture was written — invisible because the gate only sees STAGED files and nobody had touched the suite since. The same collision was hit on 2026-09-11 and worked around by assembling fixtures from fragments rather than writing them literally; the workaround was mistaken for how one writes tests here.",
+      "evidence": "COMMIT BLOCKED -- a staged Python file contains a defect signature: scripts/tests/test_library.py: truncates-record. library_checks.run() had always exempted tests/ ('checking it would refuse every oracle this repository is built on'); signature_gate.py did not, and pre-commit runs signature_gate FIRST. Fixed same day.",
+      "defense": "when a brief's oracle must carry a defect to prove it is caught, the brief names the gate that will see it and confirms the exemption exists BEFORE the work is dispatched. Two gates judging the same file must agree on what they skip; a disagreement between them is a defect in the pair, not in the test. Generalises beyond signature_gate: any new scanner needs the tests/ exemption on the day it is written."
+    },
+    {
+      "class": "gate-after-acceptance",
+      "cause_category": "harness-capability",
+      "instances": [
+        {
+          "at": "2026-09-23",
+          "chunk": "p18-proc-hivestatus"
+        },
+        {
+          "at": "2026-09-23",
+          "chunk": "p23-comply-staffing"
+        },
+        {
+          "at": "2026-09-23",
+          "chunk": "p44-comply-chatui-no-timeout"
+        },
+        {
+          "at": "2026-10-09T15:13:34Z",
+          "chunk": "p335-t767-session-review",
+          "evidence": "attempt 3 … commit"
+        },
+        {
+          "at": "2026-10-10T21:17:47Z",
+          "chunk": "p375-t1019-session-review",
+          "evidence": "attempt 7 … asked for 1 file(s), gave 1 new (3132 tok, 100s)"
+        },
+        {
+          "at": "2026-10-10T22:58:54Z",
+          "chunk": "p379-t754-check-working-set",
+          "evidence": "attempt 5 … commit gate would refuse (5073 tok, 152s)"
+        },
+        {
+          "at": "2026-10-16T04:43:32Z",
+          "chunk": "p530-t1121-coder",
+          "evidence": "attempt 5 … commit gate would refuse (6374 tok, 243s)"
+        },
+        {
+          "at": "2026-10-16T18:13:34Z",
+          "chunk": "p639-t1019-session-review",
+          "evidence": "attempt 4 … ACCEPTED (4 op(s) applied, 15248 tok, 260s)"
+        }
+      ],
+      "reason": "coder.py accepted an attempt when the suites went green; the commit gate's library ratchet ran only afterwards, inside write_branch(), and refused a NEW block finding. The change was dropped as ACCEPTED-NOT-WRITTEN (31 on record) and the model was never told why, so a re-dispatch could only repeat it.",
+      "evidence": "p18 run log: 'COMMIT BLOCKED ... NEW swallowed-exception in scripts/hivestatus.py:277  except (OSError, ValueError, IndexError): continue' then 'The change was accepted but NOT WRITTEN.' Other logs: staffing_run.py:74 swallowed-exception, staffing_run.py:85 no-timeout, chatui.py:795 process-match-by-name.",
+      "defense": "MECHANICAL (280b2ba): coder.library_gate() runs library_checks.new_blocks() -- the same function the commit ratchet calls -- inside the attempt loop, before the suites; a finding is a LIBRARY-BLOCK attempt fed back with the check id and line. test_coder_library_gate.py. General rule: every gate that can refuse a delivery must also run inside the loop that produces it."
+    },
+    {
+      "class": "window-full",
+      "cause_category": "content",
+      "instances": [
+        {
+          "at": "2026-09-23",
+          "chunk": "p20-coder-checkpoint"
+        },
+        {
+          "at": "2026-10-08T22:02:34Z",
+          "chunk": "p323-t787-check-workspace",
+          "evidence": "NEEDS-SCOPE -- refusing to start: scripts/check_workspace.py: the brief names SYMBOLS: Checker, check_manifest_ops, workspace_files, result, run, check_preference_loaders but sliced() returned nothing usable, so the WHOLE FILE was the fallback -- it also shows __init__, _check_server_side_trust, _failed_user_units, _record_history, _record_tree_state, _tracked_count, check_chat_bridge, check_deferrals .... Check the names exist and the file parses (sliced() needs both); a whole-file context is what filled the window on t447."
+        },
+        {
+          "at": "2026-10-10T05:07:31Z",
+          "chunk": "p356-t1009-coder",
+          "evidence": "attempt 4 … ACCEPTED (2 op(s) applied, 5088 tok, 183s)"
+        },
+        {
+          "at": "2026-10-19T00:23:00Z",
+          "chunk": "p748-t1441-coder",
+          "evidence": "attempt 5 … ACCEPTED (5 op(s) applied, 16691 tok, 1469s)"
+        }
+      ],
+      "reason": "the brief's file (coder.py, 124 KB) was pasted whole: a 52,538-token prompt in a 65,536-token window left ~13k tokens for reasoning and answer. Ollama reports this as done_reason=length, the same as an output cut-off, so the loop raised the output budget to 32000 -- which cannot add room the window does not have -- and the retry filled the window again (52,163 + 13,371 = 65,534).",
+      "evidence": "run-telemetry.jsonl gemma4:26b 2026-09-23T09:10:05Z prompt 52538 eval 12996 (sum 65534) done length; 09:27:06Z num_predict 32000 prompt 52163 eval 13371 (sum 65534) done length.",
+      "defense": "SCOPE: a brief whose files cannot share the window with an answer names SYMBOLS (brief.required 'symbols'). MECHANICAL: coder.py slices the prompt to the named symbols, refuses NEEDS-SCOPE before the first attempt when prompt + budget cannot fit (prompt_fits), and treats a filled window as WINDOW-FULL -- stop, do not retry with a bigger budget (e6d2d6f and the symbol-slice commit). test_coder_window_full.py, test_coder_symbol_slice.py."
+    },
+    {
+      "class": "check-satisfied-by-dead-path",
+      "cause_category": "content",
+      "instances": [
+        {
+          "at": "2026-09-23",
+          "chunk": "p41-comply-chatui-fixed-tmp-path"
+        }
+      ],
+      "reason": "a compliance brief asked only to 'fix the fixed-tmp-path finding'. The patch moved chatui.py's live-log tail from /tmp/coder-live.log to workspace/coder-live.log -- a file nothing writes (coder.py writes /tmp/coder-live/<pid>.log, read by lane_status.live_log). The check went green and the live panel went permanently empty. The oracle ran the check and nothing else, so it could not tell this from a correct fix.",
+      "evidence": "coder/brief-b2f2a784, sent back 2026-09-23 (review-verdicts.jsonl, category wrong-behaviour, should_catch brief).",
+      "defense": "SCOPE/BRIEF: a compliance brief states what the code must still do and names the existing reader/writer to use (brief.required 'behaviour_oracle'); its oracle asserts that behaviour. NOT YET MECHANICAL: the compliance generator (library.enroll_compliance) mints check-only oracles by construction, so until it carries a behaviour case, Claude's review is the only catch -- say so rather than count this class as closed."
+    },
+    {
+      "class": "unclassified",
+      "cause_category": "unclassified",
+      "instances": [
+        {
+          "at": "2026-10-01T22:52:11Z",
+          "chunk": "p234-t469-coder",
+          "evidence": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/coder-1790895050-3513293'"
+        },
+        {
+          "at": "2026-10-02T19:49:39Z",
+          "chunk": "p242-t647-reviewq",
+          "evidence": "attempt 1 … error getting loaded models: <urlopen error [Errno 111] Connection refused>"
+        },
+        {
+          "at": "2026-10-03T02:12:47Z",
+          "chunk": "p243-t646-feedback",
+          "evidence": "attempt 2 … refused (lines 1871-1872 cut a multi-line string that runs from line 1865 to line 1871 in projects/app-repo/feedback.py. A line-range edit replaces whole lines, so the range must cover the whole string (lines 1865-1871) or not cross it., 12135 tok, 787s)"
+        },
+        {
+          "at": "2026-10-08T18:51:29Z",
+          "chunk": "p312-t802-backup-corpora",
+          "evidence": "last: TESTS-FAILED —"
+        },
+        {
+          "at": "2026-10-08T19:11:00Z",
+          "chunk": "p311-t801-failure-schema",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 7963 tok, 389s)"
+        },
+        {
+          "at": "2026-10-09T01:20:12Z",
+          "chunk": "p335-t767-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p335-t767-session-review--production--swift--1791508227.log: showing the first 3000 of 3007 characters; 7 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-09T01:20:12Z",
+          "chunk": "p289-t255-publish",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p289-t255-publish--production--swift--1791508227.log: showing the first 3000 of 3018 characters; 18 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-09T01:20:51Z",
+          "chunk": "p299-t658-failure-schema",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p299-t658-failure-schema--production--swift--1791508227.log: showing the first 3000 of 3006 characters; 6 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-09T13:50:22Z",
+          "chunk": "p299-t658-failure-schema",
+          "evidence": "attempt 2 … ACCEPTED (1 op(s) applied, 1010 tok, 153s)"
+        },
+        {
+          "at": "2026-10-09T17:17:31Z",
+          "chunk": "p329-t774-coder",
+          "evidence": "attempt 3 … ACCEPTED (4 op(s) applied, 12996 tok, 839s)"
+        },
+        {
+          "at": "2026-10-09T17:53:44Z",
+          "chunk": "p294-t680-server",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 1346 tok, 81s)"
+        },
+        {
+          "at": "2026-10-09T18:26:21Z",
+          "chunk": "p293-t680-core",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 36268 tok, 2053s)"
+        },
+        {
+          "at": "2026-10-10T00:27:29Z",
+          "chunk": "p298-t361-modellease",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p298-t361-modellease--production--swift--1791591700.log: showing the first 3000 of 3422 characters; 422 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-10T00:27:31Z",
+          "chunk": "p346-t812-flow-change",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p346-t812-flow-change--production--swift--1791591699.log: showing the first 3000 of 3429 characters; 429 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-10T03:10:49Z",
+          "chunk": "p293-t680-core",
+          "evidence": "attempt 3 … ACCEPTED (2 op(s) applied, 14826 tok, 640s)"
+        },
+        {
+          "at": "2026-10-10T03:24:56Z",
+          "chunk": "p294-t680-server",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 1726 tok, 109s)"
+        },
+        {
+          "at": "2026-10-10T03:37:35Z",
+          "chunk": "p295-t704-backup-corpora",
+          "evidence": "attempt 3 … ACCEPTED (3 op(s) applied, 5353 tok, 260s)"
+        },
+        {
+          "at": "2026-10-10T04:01:06Z",
+          "chunk": "p329-t774-coder",
+          "evidence": "attempt 3 … ACCEPTED (4 op(s) applied, 4477 tok, 219s)"
+        },
+        {
+          "at": "2026-10-10T04:30:11Z",
+          "chunk": "p299-t658-failure-schema",
+          "evidence": "attempt 1 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-10T07:37:41Z",
+          "chunk": "p318-t798-guard-task-writes",
+          "evidence": "attempt 3 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-10T14:53:40Z",
+          "chunk": "p354-t820-flow",
+          "evidence": "attempt 3 …"
+        },
+        {
+          "at": "2026-10-10T15:16:13Z",
+          "chunk": "p357-t853-coder",
+          "evidence": "attempt 4 … ACCEPTED (7 op(s) applied, 7879 tok, 303s)"
+        },
+        {
+          "at": "2026-10-10T16:19:16Z",
+          "chunk": "p362-t952-notify",
+          "evidence": "attempt 3 … ACCEPTED (5 op(s) applied, 6502 tok, 248s)"
+        },
+        {
+          "at": "2026-10-10T16:36:40Z",
+          "chunk": "p365-t980-coder",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 3121 tok, 118s)"
+        },
+        {
+          "at": "2026-10-10T18:50:34Z",
+          "chunk": "p371-t1000-coder",
+          "evidence": "attempt 3 … ACCEPTED (2 op(s) applied, 1713 tok, 80s)"
+        },
+        {
+          "at": "2026-10-10T19:18:46Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791659781.log: showing the first 3000 of 3533 characters; 533 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-10T20:27:51Z",
+          "chunk": "p374-t1018-coder",
+          "evidence": "attempt 4 … ACCEPTED (2 op(s) applied, 3715 tok, 100s)"
+        },
+        {
+          "at": "2026-10-10T23:25:26Z",
+          "chunk": "p380-t1021-core",
+          "evidence": "attempt 5 … ACCEPTED (3 op(s) applied, 3318 tok, 152s)"
+        },
+        {
+          "at": "2026-10-11T02:14:34Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791684760.log: showing the first 3000 of 4202 characters; 1202 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T07:25:12Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791789387.log: showing the first 3000 of 7099 characters; 4099 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T08:19:39Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791792753.log: showing the first 3000 of 6419 characters; 3419 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T08:30:30Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791792915.log: showing the first 3000 of 6374 characters; 3374 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T08:50:17Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791794121.log: showing the first 3000 of 6531 characters; 3531 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T08:57:56Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791794569.log: showing the first 3000 of 6557 characters; 3557 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T18:43:22Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791829714.log: showing the first 3000 of 6828 characters; 3828 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T18:46:53Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791830327.log: showing the first 3000 of 6717 characters; 3717 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T19:04:28Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791831407.log: showing the first 3000 of 6943 characters; 3943 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T19:10:59Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791831407.log: showing the first 3000 of 7018 characters; 4018 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T19:20:25Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791832389.log: showing the first 3000 of 6834 characters; 3834 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T19:28:19Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791832389.log: showing the first 3000 of 6893 characters; 3893 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T19:40:30Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791833629.log: showing the first 3000 of 6753 characters; 3753 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T19:48:30Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791833630.log: showing the first 3000 of 6796 characters; 3796 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:04:37Z",
+          "chunk": "p388-t1029-check-gate-closures",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p388-t1029-check-gate-closures--production--swift--1791834537.log: showing the first 3000 of 6821 characters; 3821 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:09:23Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791835628.log: showing the first 3000 of 6707 characters; 3707 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:11:33Z",
+          "chunk": "p388-t1029-check-gate-closures",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p388-t1029-check-gate-closures--production--swift--1791835807.log: showing the first 3000 of 6732 characters; 3732 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:14:56Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791835992.log: showing the first 3000 of 6759 characters; 3759 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:17:23Z",
+          "chunk": "p390-t1031-sync-facts",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p390-t1031-sync-facts--production--swift--1791836145.log: showing the first 3000 of 6671 characters; 3671 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:19:30Z",
+          "chunk": "p391-t1033-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p391-t1033-scope-lint--production--swift--1791836281.log: showing the first 3000 of 6856 characters; 3856 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:22:07Z",
+          "chunk": "p393-t1034-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p393-t1034-dispatch-loop--production--swift--1791836427.log: showing the first 3000 of 6698 characters; 3698 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:24:35Z",
+          "chunk": "p395-t1035-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p395-t1035-dispatch-loop--production--swift--1791836572.log: showing the first 3000 of 6690 characters; 3690 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:27:27Z",
+          "chunk": "p396-t1036-reviewq",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p396-t1036-reviewq--production--swift--1791836737.log: showing the first 3000 of 6823 characters; 3823 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:30:57Z",
+          "chunk": "p395-t1035-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p395-t1035-dispatch-loop--production--swift--1791836935.log: showing the first 3000 of 6716 characters; 3716 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:33:37Z",
+          "chunk": "p396-t1036-reviewq",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p396-t1036-reviewq--production--swift--1791837090.log: showing the first 3000 of 6823 characters; 3823 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:36:21Z",
+          "chunk": "p393-t1034-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p393-t1034-dispatch-loop--production--swift--1791837252.log: showing the first 3000 of 6672 characters; 3672 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:38:59Z",
+          "chunk": "p391-t1033-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p391-t1033-scope-lint--production--swift--1791837410.log: showing the first 3000 of 6856 characters; 3856 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:41:22Z",
+          "chunk": "p390-t1031-sync-facts",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p390-t1031-sync-facts--production--swift--1791837560.log: showing the first 3000 of 6697 characters; 3697 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:43:50Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791837708.log: showing the first 3000 of 6759 characters; 3759 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:46:31Z",
+          "chunk": "p388-t1029-check-gate-closures",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p388-t1029-check-gate-closures--production--swift--1791837853.log: showing the first 3000 of 6732 characters; 3732 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:51:37Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791838018.log: showing the first 3000 of 6707 characters; 3707 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T20:57:38Z",
+          "chunk": "p397-t1038-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p397-t1038-session-review--production--swift--1791838317.log: showing the first 3000 of 6711 characters; 3711 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:04:30Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791838764.log: showing the first 3000 of 6707 characters; 3707 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:13:18Z",
+          "chunk": "p397-t1038-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p397-t1038-session-review--production--swift--1791839453.log: showing the first 3000 of 6685 characters; 3685 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:15:57Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791839623.log: showing the first 3000 of 6707 characters; 3707 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:18:45Z",
+          "chunk": "p388-t1029-check-gate-closures",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p388-t1029-check-gate-closures--production--swift--1791839788.log: showing the first 3000 of 6865 characters; 3865 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:21:17Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791839940.log: showing the first 3000 of 6759 characters; 3759 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:24:03Z",
+          "chunk": "p390-t1031-sync-facts",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p390-t1031-sync-facts--production--swift--1791840101.log: showing the first 3000 of 6697 characters; 3697 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-12T21:27:16Z",
+          "chunk": "p391-t1033-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p391-t1033-scope-lint--production--swift--1791840284.log: showing the first 3000 of 6830 characters; 3830 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:44:52Z",
+          "chunk": "p390-t1031-sync-facts",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p390-t1031-sync-facts--production--swift--1791870187.log: showing the first 3000 of 7094 characters; 4094 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:44:52Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791870187.log: showing the first 3000 of 7107 characters; 4107 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:44:54Z",
+          "chunk": "p391-t1033-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p391-t1033-scope-lint--production--swift--1791870187.log: showing the first 3000 of 7097 characters; 4097 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:49:29Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p386-t1026-2c6800f20445--production--swift--1791870472.log: showing the first 3000 of 7133 characters; 4133 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:49:30Z",
+          "chunk": "p391-t1033-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p391-t1033-scope-lint--production--swift--1791870472.log: showing the first 3000 of 7071 characters; 4071 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:50:27Z",
+          "chunk": "p390-t1031-sync-facts",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p390-t1031-sync-facts--production--swift--1791870535.log: showing the first 3000 of 7071 characters; 4071 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:52:26Z",
+          "chunk": "p388-t1029-check-gate-closures",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p388-t1029-check-gate-closures--production--swift--1791870650.log: showing the first 3000 of 7106 characters; 4106 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:52:28Z",
+          "chunk": "p372-t1017-config",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p372-t1017-config--production--swift--1791870650.log: showing the first 3000 of 7078 characters; 4078 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:54:24Z",
+          "chunk": "p397-t1038-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p397-t1038-session-review--production--swift--1791870772.log: showing the first 3000 of 7059 characters; 4059 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T05:57:09Z",
+          "chunk": "p395-t1035-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p395-t1035-dispatch-loop--production--swift--1791870889.log: showing the first 3000 of 7188 characters; 4188 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T15:02:44Z",
+          "chunk": "p386-t1026-2c6800f20445",
+          "evidence": "attempt 3 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-13T15:25:14Z",
+          "chunk": "p399-t1040-console",
+          "evidence": "attempt 3 … ACCEPTED (6 op(s) applied, 5248 tok, 203s)"
+        },
+        {
+          "at": "2026-10-13T16:34:59Z",
+          "chunk": "p454-t1051-session-review",
+          "evidence": "attempt 1 … ACCEPTED (6 op(s) applied, 22462 tok, 594s)"
+        },
+        {
+          "at": "2026-10-13T17:44:54Z",
+          "chunk": "p497-t1101-task-routing",
+          "evidence": "attempt 5 … refused (lines 32-34 cut a multi-line string that runs from line 2 to line 35 in scripts/task_routing.py. A line-range edit replaces whole lines, so the range must cover the whole string (lines 2-35) or not cross it., 3683 tok, 150s)"
+        },
+        {
+          "at": "2026-10-13T18:14:04Z",
+          "chunk": "p495-t1099-memory",
+          "evidence": "shutil.Error: [('/home/user/ai-workspace/workspace/scoping-lease.slot2.json', '/tmp/coder-1791915234-3776799/workspace/scoping-lease.slot2.json', \"[Errno 2] No such file or directory: '/home/user/ai-workspace/workspace/scoping-lease.slot2.json'\")]"
+        },
+        {
+          "at": "2026-10-13T20:20:17Z",
+          "chunk": "p467-t1066-session-start",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p467-t1066-session-start--production--swift--1791922675.log: showing the first 3000 of 7537 characters; 4537 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:28:27Z",
+          "chunk": "p467-t1066-session-start",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p467-t1066-session-start--production--swift--1791926773.log: showing the first 3000 of 7539 characters; 4539 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:28:28Z",
+          "chunk": "p468-t1067-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p468-t1067-check-workspace--production--swift--1791926773.log: showing the first 3000 of 7710 characters; 4710 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:28:30Z",
+          "chunk": "p472-t1069-console",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p472-t1069-console--production--swift--1791926773.log: showing the first 3000 of 7489 characters; 4489 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:31:01Z",
+          "chunk": "p474-t1072-auto-merge",
+          "evidence": "REFUSED: pid 646839 is already running this job (brief-a7f51b53, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:31:24Z",
+          "chunk": "p471-t1071-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p471-t1071-dispatch-loop--production--swift--1791926973.log: showing the first 3000 of 7502 characters; 4502 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:31:25Z",
+          "chunk": "p473-t1072-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p473-t1072-scope-lint--production--swift--1791926973.log: showing the first 3000 of 7481 characters; 4481 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:32:12Z",
+          "chunk": "p474-t1072-auto-merge",
+          "evidence": "recorded this failure on t1072 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T21:32:57Z",
+          "chunk": "p477-t1075-guard-process-waits",
+          "evidence": "REFUSED: pid 703066 is already running this job (brief-cb4c300f, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:34:02Z",
+          "chunk": "p477-t1075-guard-process-waits",
+          "evidence": "recorded this failure on t1075 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T21:34:59Z",
+          "chunk": "p476-t1076-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p476-t1076-session-review--production--swift--1791927197.log: showing the first 3000 of 7491 characters; 4491 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T21:35:11Z",
+          "chunk": "p478-t1077-pre-commit",
+          "evidence": "REFUSED: pid 770443 is already running this job (brief-204cb150, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:36:49Z",
+          "chunk": "p478-t1077-pre-commit",
+          "evidence": "recorded this failure on t1077 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T21:36:59Z",
+          "chunk": "p479-t1078-check-measurements",
+          "evidence": "REFUSED: pid 802868 is already running this job (brief-9a1e62c7, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:38:19Z",
+          "chunk": "p479-t1078-check-measurements",
+          "evidence": "recorded this failure on t1078 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T21:41:50Z",
+          "chunk": "p482-t1083-session-review",
+          "evidence": "REFUSED: pid 854817 is already running this job (brief-4c6c6fa0, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:44:32Z",
+          "chunk": "p482-t1083-session-review",
+          "evidence": "recorded this failure on t1083 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T21:49:48Z",
+          "chunk": "p476-t1076-session-review",
+          "evidence": "REFUSED: pid 913034 is already running this job (brief-38a845ec, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:52:47Z",
+          "chunk": "p476-t1076-session-review",
+          "evidence": "HARNESS-BUG: filed t1133"
+        },
+        {
+          "at": "2026-10-13T21:56:33Z",
+          "chunk": "p473-t1072-scope-lint",
+          "evidence": "REFUSED: pid 965225 is already running this job (brief-f2f0a48a, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T21:57:13Z",
+          "chunk": "p473-t1072-scope-lint",
+          "evidence": "recorded this failure on t1072 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T22:02:44Z",
+          "chunk": "p471-t1071-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p471-t1071-dispatch-loop--production--swift--1791928782.log: showing the first 3000 of 7563 characters; 4563 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:05:21Z",
+          "chunk": "p472-t1069-console",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p472-t1069-console--production--swift--1791928938.log: showing the first 3000 of 7576 characters; 4576 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:07:35Z",
+          "chunk": "p468-t1067-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p468-t1067-check-workspace--production--swift--1791929084.log: showing the first 3000 of 7723 characters; 4723 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:09:51Z",
+          "chunk": "p505-t1114-roles-pages",
+          "evidence": "shutil.Error: [('/home/user/ai-workspace/workspace/scoping-lease.json', '/home/user/.cache/hivemind-tmp/coder-1791929387-1158945/workspace/scoping-lease.json', \"[Errno 2] No such file or directory: '/home/user/ai-workspace/workspace/scoping-lease.json'\")]"
+        },
+        {
+          "at": "2026-10-13T22:10:30Z",
+          "chunk": "p467-t1066-session-start",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p467-t1066-session-start--production--swift--1791929269.log: showing the first 3000 of 7577 characters; 4577 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:16:59Z",
+          "chunk": "p467-t1066-session-start",
+          "evidence": "REFUSED: pid 1184773 is already running this job (brief-d0864e36, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T22:19:01Z",
+          "chunk": "p467-t1066-session-start",
+          "evidence": "recorded this failure on t1066 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T22:24:55Z",
+          "chunk": "p506-t1115-hub-common",
+          "evidence": "REFUSED: pid 1246851 is already running this job (brief-21c4d97d, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T22:27:22Z",
+          "chunk": "p506-t1115-hub-common",
+          "evidence": "recorded this failure on t1115 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T22:33:13Z",
+          "chunk": "p507-t1115-feedback",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p507-t1115-feedback--production--swift--1791930591.log: showing the first 3000 of 7718 characters; 4718 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:35:35Z",
+          "chunk": "p471-t1071-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p471-t1071-dispatch-loop--production--swift--1791930756.log: showing the first 3000 of 7705 characters; 4705 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:37:54Z",
+          "chunk": "p468-t1067-check-workspace",
+          "evidence": "REFUSED: pid 1406609 is already running this job (brief-8107c418, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T22:41:00Z",
+          "chunk": "p468-t1067-check-workspace",
+          "evidence": "recorded this failure on t1067 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T22:46:44Z",
+          "chunk": "p472-t1069-console",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p472-t1069-console--production--swift--1791931420.log: showing the first 3000 of 7744 characters; 4744 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:52:55Z",
+          "chunk": "p510-t1135-task-routing",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p510-t1135-task-routing--production--swift--1791931786.log: showing the first 3000 of 7724 characters; 4724 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T22:53:48Z",
+          "chunk": "p483-t1084-handover",
+          "evidence": "REFUSED: pid 1534309 is already running this job (brief-e532072d, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T22:54:56Z",
+          "chunk": "p483-t1084-handover",
+          "evidence": "recorded this failure on t1084 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T22:58:26Z",
+          "chunk": "p484-t1085-session-review",
+          "evidence": "REFUSED: pid 1588721 is already running this job (brief-f39ac2d2, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-13T23:01:12Z",
+          "chunk": "p484-t1085-session-review",
+          "evidence": "recorded this failure on t1085 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-13T23:03:00Z",
+          "chunk": "p485-t1087-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p485-t1087-session-review--production--swift--1791932394.log: showing the first 3000 of 7730 characters; 4730 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T23:08:50Z",
+          "chunk": "p486-t1088-library",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p486-t1088-library--production--swift--1791932747.log: showing the first 3000 of 7737 characters; 4737 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T23:11:34Z",
+          "chunk": "p487-t1090-flow-coverage",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p487-t1090-flow-coverage--production--swift--1791932912.log: showing the first 3000 of 7691 characters; 4691 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T23:15:05Z",
+          "chunk": "p488-t1091-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p488-t1091-scope-lint--production--swift--1791933109.log: showing the first 3000 of 7732 characters; 4732 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T23:17:02Z",
+          "chunk": "p489-t1092-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p489-t1092-check-workspace--production--swift--1791933236.log: showing the first 3000 of 7868 characters; 4868 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T23:36:04Z",
+          "chunk": "p489-t1092-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p489-t1092-check-workspace--production--swift--1791933659.log: showing the first 3000 of 7855 characters; 4855 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-13T23:49:13Z",
+          "chunk": "p488-t1091-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p488-t1091-scope-lint--production--swift--1791934417.log: showing the first 3000 of 8809 characters; 5809 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T00:05:37Z",
+          "chunk": "p507-t1115-feedback",
+          "evidence": "REFUSED: pid 2011660 is already running this job (brief-4336842a, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-14T00:10:18Z",
+          "chunk": "p507-t1115-feedback",
+          "evidence": "[2026-10-14T00:10:17Z] /usr/bin/python3 /home/user/ai-workspace/scripts/supervise.py --failure 2026-10-14T00:05:36Z|p507-t1115-feedback|swift --model swift"
+        },
+        {
+          "at": "2026-10-14T00:20:31Z",
+          "chunk": "p471-t1071-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p471-t1071-dispatch-loop--production--swift--1791936693.log: showing the first 3000 of 7924 characters; 4924 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T00:22:42Z",
+          "chunk": "p488-t1091-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p488-t1091-scope-lint--production--swift--1791936965.log: showing the first 3000 of 7925 characters; 4925 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T00:33:21Z",
+          "chunk": "p488-t1091-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p488-t1091-scope-lint--production--swift--1791937570.log: showing the first 3000 of 7921 characters; 4921 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T00:40:07Z",
+          "chunk": "p471-t1071-dispatch-loop",
+          "evidence": "REFUSED: pid 2233688 is already running this job (brief-9a4b21d2, model swift). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-14T00:41:28Z",
+          "chunk": "p471-t1071-dispatch-loop",
+          "evidence": "recorded this failure on t1071 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-14T00:48:20Z",
+          "chunk": "p487-t1090-flow-coverage",
+          "evidence": "target suite: scripts/tests/test_flow_stations.py — must go GREEN, not merely stay unbroken"
+        },
+        {
+          "at": "2026-10-14T00:50:53Z",
+          "chunk": "p489-t1092-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p489-t1092-check-workspace--production--swift--1791938647.log: showing the first 3000 of 8053 characters; 5053 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T00:53:53Z",
+          "chunk": "p487-t1090-flow-coverage",
+          "evidence": "recorded this failure on t1090 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-14T01:17:08Z",
+          "chunk": "p486-t1088-library",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p486-t1088-library--production--swift--1791939718.log: showing the first 3000 of 8041 characters; 5041 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T01:42:17Z",
+          "chunk": "p486-t1088-library",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p486-t1088-library--production--swift--1791941217.log: showing the first 3000 of 8070 characters; 5070 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T01:47:17Z",
+          "chunk": "p489-t1092-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p489-t1092-check-workspace--production--swift--1791941933.log: showing the first 3000 of 8005 characters; 5005 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-14T01:56:31Z",
+          "chunk": "p488-t1091-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p488-t1091-scope-lint--production--swift--1791942775.log: showing the first 3000 of 8156 characters; 5156 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-15T18:08:33Z",
+          "chunk": "p552-t1102-sweep",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p552-t1102-sweep--production--gemma4_e4b--1792086775.log: showing the first 3000 of 8958 characters; 5958 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-15T18:16:34Z",
+          "chunk": "p552-t1102-sweep",
+          "evidence": "REFUSED: pid 2187626 is already running this job (brief-6525b3ec, model gemma4:e4b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-15T18:31:36Z",
+          "chunk": "p552-t1102-sweep",
+          "evidence": "recorded this failure on t1102 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-15T19:47:04Z",
+          "chunk": "p633-t1209-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p633-t1209-scope-lint--production--gemma4_26b--1792092720.log: showing the first 3000 of 8861 characters; 5861 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-15T20:07:56Z",
+          "chunk": "p578-t1206-flow-coverage",
+          "evidence": "REFUSED: pid 2420280 is already running this job (brief-d602728d, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-15T20:44:37Z",
+          "chunk": "p633-t1209-scope-lint",
+          "evidence": "REFUSED: pid 2541857 is already running this job (brief-a0961ceb, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-15T21:41:19Z",
+          "chunk": "p524-t712-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p524-t712-coder--production--gemma4_26b--1792099230.log: showing the first 3000 of 9243 characters; 6243 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-15T22:28:55Z",
+          "chunk": "p524-t712-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p524-t712-coder--production--gemma4_26b--1792103141.log: showing the first 3000 of 8980 characters; 5980 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-15T22:52:43Z",
+          "chunk": "p524-t712-coder",
+          "evidence": "attempt 1 … ACCEPTED (3 op(s) applied, 451 tok, 5s)"
+        },
+        {
+          "at": "2026-10-15T23:06:15Z",
+          "chunk": "p552-t1102-sweep",
+          "evidence": "REFUSED: pid 3033069 is already running this job (brief-6525b3ec, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-15T23:21:31Z",
+          "chunk": "p552-t1102-sweep",
+          "evidence": "recorded this failure on t1102 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-15T23:44:05Z",
+          "chunk": "p525-t733-failure-schema",
+          "evidence": "REFUSED: pid 3155696 is already running this job (brief-51d6d203, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-15T23:52:08Z",
+          "chunk": "p525-t733-failure-schema",
+          "evidence": "recorded this failure on t733 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-16T00:09:53Z",
+          "chunk": "p527-t738-settings",
+          "evidence": "REFUSED: pid 3302937 is already running this job (brief-ff0d0441, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-16T00:16:48Z",
+          "chunk": "p527-t738-settings",
+          "evidence": "recorded this failure on t738 and moved it to the front of QUEUE.md"
+        },
+        {
+          "at": "2026-10-16T00:33:59Z",
+          "chunk": "p528-t813-session-review",
+          "evidence": "REFUSED: pid 3413699 is already running this job (brief-26bc13c2, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-16T00:43:53Z",
+          "chunk": "p582-t1213-test-lane-manager-view",
+          "evidence": "REFUSED: pid 3470394 is already running this job (brief-09fe8d3f, model gemma4:26b). A second copy races it for the GPU and, with --apply, for the same branch. Wait for it, or kill it first."
+        },
+        {
+          "at": "2026-10-16T08:54:01Z",
+          "chunk": "p545-t1109-coder",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 745 tok, 37s)"
+        },
+        {
+          "at": "2026-10-16T10:42:34Z",
+          "chunk": "p554-t1069-console",
+          "evidence": "attempt 1 … ACCEPTED (2 op(s) applied, 1292 tok, 53s)"
+        },
+        {
+          "at": "2026-10-16T11:34:44Z",
+          "chunk": "p565-t1090-flow-coverage",
+          "evidence": "attempt 2 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-16T13:48:51Z",
+          "chunk": "p521-t1167-coder-harness",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-16T14:03:08Z",
+          "chunk": "p549-t1064-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p549-t1064-session-review--production--qwen3.8_27b-mtp-q4_K_M-56k--1792158736.log: showing the first 3000 of 9870 characters; 6870 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-16T14:27:31Z",
+          "chunk": "p583-t1076-session-review",
+          "evidence": "attempt 2 … ACCEPTED (1 op(s) applied, 2020 tok, 61s)"
+        },
+        {
+          "at": "2026-10-16T15:12:49Z",
+          "chunk": "p569-t1078-check-measurements",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p569-t1078-check-measurements--production--swift--1792163359.log: showing the first 3000 of 9641 characters; 6641 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-16T16:25:23Z",
+          "chunk": "p560-t1058-flow",
+          "evidence": "attempt 3 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-16T16:42:28Z",
+          "chunk": "p574-t1051-session-review",
+          "evidence": "attempt 1 … ACCEPTED (6 op(s) applied, 19208 tok, 491s)"
+        },
+        {
+          "at": "2026-10-16T16:46:36Z",
+          "chunk": "p580-t1026-2c6800f20445",
+          "evidence": "attempt 3 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-16T18:27:32Z",
+          "chunk": "p599-t1000-coder",
+          "evidence": "attempt 3 … ACCEPTED (2 op(s) applied, 3704 tok, 148s)"
+        },
+        {
+          "at": "2026-10-16T19:02:50Z",
+          "chunk": "p585-t989-coder",
+          "evidence": "attempt 1 … ACCEPTED (5 op(s) applied, 6564 tok, 206s)"
+        },
+        {
+          "at": "2026-10-16T19:15:34Z",
+          "chunk": "p586-t980-coder",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 3149 tok, 85s)"
+        },
+        {
+          "at": "2026-10-16T19:27:10Z",
+          "chunk": "p597-t979-coder",
+          "evidence": "attempt 2 … ACCEPTED (1 op(s) applied, 705 tok, 29s)"
+        },
+        {
+          "at": "2026-10-16T19:43:57Z",
+          "chunk": "p592-t952-notify",
+          "evidence": "attempt 3 … ACCEPTED (4 op(s) applied, 4887 tok, 292s)"
+        },
+        {
+          "at": "2026-10-16T20:39:57Z",
+          "chunk": "p591-t757-servers",
+          "evidence": "attempt 2 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-16T21:49:24Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p562-t798-guard-task-writes--production--swift--1792187206.log: showing the first 3000 of 9798 characters; 6798 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-16T23:05:15Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p562-t798-guard-task-writes--production--swift--1792191793.log: showing the first 3000 of 9798 characters; 6798 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-16T23:09:45Z",
+          "chunk": "p678-t1309-dispatch-loop",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p678-t1309-dispatch-loop--production--swift--1792192043.log: showing the first 3000 of 9789 characters; 6789 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-16T23:13:38Z",
+          "chunk": "p589-t801-failure-schema",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p589-t801-failure-schema--production--swift--1792192276.log: showing the first 3000 of 9811 characters; 6811 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T00:29:23Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p562-t798-guard-task-writes--production--swift--1792196834.log: showing the first 3000 of 9964 characters; 6964 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T00:33:05Z",
+          "chunk": "p595-t781-askmemory",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p595-t781-askmemory--production--swift--1792197055.log: showing the first 3000 of 9953 characters; 6953 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T02:03:26Z",
+          "chunk": "p596-t1009-related-tests",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p596-t1009-related-tests--production--swift--1792202474.log: showing the first 3000 of 9972 characters; 6972 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T02:07:40Z",
+          "chunk": "p600-t658-failure-schema",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p600-t658-failure-schema--production--swift--1792202716.log: showing the first 3000 of 10101 characters; 7101 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T02:12:55Z",
+          "chunk": "p600-t658-failure-schema",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p600-t658-failure-schema--production--swift--1792203025.log: showing the first 3000 of 9994 characters; 6994 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T04:17:57Z",
+          "chunk": "p530-t1121-coder",
+          "evidence": "attempt 3 … ACCEPTED (7 op(s) applied, 5482 tok, 306s)"
+        },
+        {
+          "at": "2026-10-17T11:49:24Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-17T12:00:38Z",
+          "chunk": "p589-t801-failure-schema",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p589-t801-failure-schema--production--qwen3.8_27b-mtp-q4_K_M-56k--1792238206.log: showing the first 3000 of 10635 characters; 7635 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T16:00:06Z",
+          "chunk": "p549-t1064-session-review",
+          "evidence": "attempt 3 … ACCEPTED (1 op(s) applied, 5470 tok, 94s)"
+        },
+        {
+          "at": "2026-10-17T16:22:07Z",
+          "chunk": "p611-t1118-coder",
+          "evidence": "attempt 3 … ACCEPTED (2 op(s) applied, 4644 tok, 78s)"
+        },
+        {
+          "at": "2026-10-17T17:41:25Z",
+          "chunk": "p614-t1163-coder",
+          "evidence": "attempt 3 … ACCEPTED (3 op(s) applied, 4677 tok, 77s)"
+        },
+        {
+          "at": "2026-10-17T18:25:37Z",
+          "chunk": "p617-t1184-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p617-t1184-check-workspace--production--qwen3.8_27b-mtp-q4_K_M-56k--1792261267.log: showing the first 3000 of 10652 characters; 7652 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-17T23:12:24Z",
+          "chunk": "p659-t1233-coder",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-17T23:28:04Z",
+          "chunk": "p662-t1241-coder",
+          "evidence": "attempt 2 … ACCEPTED (5 op(s) applied, 11092 tok, 417s)"
+        },
+        {
+          "at": "2026-10-18T01:05:12Z",
+          "chunk": "p663-t1242-probe",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-18T02:59:08Z",
+          "chunk": "p668-t1250-coder",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-18T04:03:42Z",
+          "chunk": "p674-t1258-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p674-t1258-session-review--production--swift--1792296087.log: showing the first 3000 of 10598 characters; 7598 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-18T04:11:05Z",
+          "chunk": "p674-t1258-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p674-t1258-session-review--production--swift--1792296514.log: showing the first 3000 of 10617 characters; 7617 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-18T04:32:07Z",
+          "chunk": "p675-t1260-coder",
+          "evidence": "attempt 1 … ACCEPTED (2 op(s) applied, 3636 tok, 157s)"
+        },
+        {
+          "at": "2026-10-18T05:46:08Z",
+          "chunk": "p671-t1254-nas-backup",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-18T08:59:44Z",
+          "chunk": "p674-t1258-session-review",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-18T10:54:17Z",
+          "chunk": "p685-t1312-session-review",
+          "evidence": "attempt 3 … ACCEPTED (1 op(s) applied, 1169 tok, 37s)"
+        },
+        {
+          "at": "2026-10-18T13:22:30Z",
+          "chunk": "p688-t1316-check-declared-intent",
+          "evidence": "attempt 2 … ERROR HTTPError: HTTP Error 400: Bad Request"
+        },
+        {
+          "at": "2026-10-18T15:58:13Z",
+          "chunk": "p690-t1320-infer",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p690-t1320-infer--production--qwen3.8_27b-mtp-q4_K_M-56k--1792338794.log: showing the first 3000 of 11117 characters; 8117 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-18T16:46:55Z",
+          "chunk": "p694-t1331-session-review",
+          "evidence": "attempt 3 … ACCEPTED (1 op(s) applied, 3794 tok, 198s)"
+        },
+        {
+          "at": "2026-10-18T19:45:08Z",
+          "chunk": "p702-t1349-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p702-t1349-session-review--production--swift--1792352520.log: showing the first 3000 of 11170 characters; 8170 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-18T19:52:13Z",
+          "chunk": "p702-t1349-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p702-t1349-session-review--production--swift--1792352943.log: showing the first 3000 of 11303 characters; 8303 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-18T21:07:10Z",
+          "chunk": "p702-t1349-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p702-t1349-session-review--production--swift--1792357441.log: showing the first 3000 of 11169 characters; 8169 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-18T22:07:05Z",
+          "chunk": "p746-t1439-ef053d31949a",
+          "evidence": "attempt 2 … ACCEPTED (4 op(s) applied, 4563 tok, 75s)"
+        },
+        {
+          "at": "2026-10-18T23:14:57Z",
+          "chunk": "p702-t1349-session-review",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 1891 tok, 121s)"
+        },
+        {
+          "at": "2026-10-19T00:46:34Z",
+          "chunk": "p744-t1432-coder",
+          "evidence": "attempt 2 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-19T04:46:55Z",
+          "chunk": "p750-t1447-backup-corpora",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p750-t1447-backup-corpora--production--swift--1792385030.log: showing the first 3000 of 11232 characters; 8232 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T04:54:23Z",
+          "chunk": "p750-t1447-backup-corpora",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p750-t1447-backup-corpora--production--swift--1792385479.log: showing the first 3000 of 11365 characters; 8365 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T05:05:25Z",
+          "chunk": "p753-t1455-test-notify",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p753-t1455-test-notify--production--swift--1792385881.log: showing the first 3000 of 11490 characters; 8490 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T05:54:14Z",
+          "chunk": "p756-t1476-check-workspace",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-19T06:21:25Z",
+          "chunk": "p753-t1455-test-notify",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p753-t1455-test-notify--production--qwen3.8_27b-mtp-q4_K_M-56k--1792390373.log: showing the first 3000 of 11703 characters; 8703 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T08:37:49Z",
+          "chunk": "p750-t1447-backup-corpora",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p750-t1447-backup-corpora--production--swift--1792398898.log: showing the first 3000 of 11246 characters; 8246 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T08:42:57Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p562-t798-guard-task-writes--production--swift--1792399195.log: showing the first 3000 of 11327 characters; 8327 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T09:03:18Z",
+          "chunk": "p754-t1459-fb7d098621b5",
+          "evidence": "attempt 3 … ACCEPTED (2 op(s) applied, 1276 tok, 34s)"
+        },
+        {
+          "at": "2026-10-19T10:17:43Z",
+          "chunk": "p753-t1455-test-notify",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-19T12:58:01Z",
+          "chunk": "p757-t1466-handover",
+          "evidence": "attempt 1 … ERROR TimeoutError: timed out"
+        },
+        {
+          "at": "2026-10-19T13:14:33Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p562-t798-guard-task-writes--production--qwen3.8_27b-mtp-q4_K_M-56k--1792415029.log: showing the first 3000 of 11412 characters; 8412 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T13:30:56Z",
+          "chunk": "p750-t1447-backup-corpora",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p750-t1447-backup-corpora--production--qwen3.8_27b-mtp-q4_K_M-56k--1792416086.log: showing the first 3000 of 11565 characters; 8565 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T13:41:10Z",
+          "chunk": "p760-t1021-core",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p760-t1021-core--production--qwen3.8_27b-mtp-q4_K_M-56k--1792416948.log: showing the first 3000 of 11293 characters; 8293 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T19:16:57Z",
+          "chunk": "p760-t1021-core",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p760-t1021-core--production--swift--1792437144.log: showing the first 3000 of 11158 characters; 8158 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-19T21:46:37Z",
+          "chunk": "p760-t1021-core",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p760-t1021-core--production--qwen3.8_27b-mtp-q4_K_M-56k--1792446214.log: showing the first 3000 of 11357 characters; 8357 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-20T04:17:05Z",
+          "chunk": "p772-t1502-test-skill-change",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p772-t1502-test-skill-change--production--qwen3.8_27b-mtp-q4_K_M-56k--1792469345.log: showing the first 3000 of 11127 characters; 8127 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-20T18:32:18Z",
+          "chunk": "p755-t1463-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p755-t1463-coder--production--swift--1792520648.log: showing the first 3000 of 12036 characters; 9036 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T00:54:31Z",
+          "chunk": "p755-t1463-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p755-t1463-coder--production--swift--1792543657.log: showing the first 3000 of 12048 characters; 9048 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T02:05:48Z",
+          "chunk": "p824-t1541-test-coder-branch-delivery",
+          "evidence": "attempt 4 …"
+        },
+        {
+          "at": "2026-10-21T08:38:51Z",
+          "chunk": "p741-t1426-supervise",
+          "evidence": "baselining the sandbox …[2026-10-21T08:38:50Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-21T14:10:39Z",
+          "chunk": "p598-t1022-library-checks",
+          "evidence": "attempt 1 …"
+        },
+        {
+          "at": "2026-10-21T18:38:41Z",
+          "chunk": "p768-t1123-coder",
+          "evidence": "attempt 5 … ACCEPTED (2 op(s) applied, 4808 tok, 243s)"
+        },
+        {
+          "at": "2026-10-21T20:52:12Z",
+          "chunk": "p631-t999-coder",
+          "evidence": "attempt 3 … ACCEPTED (3 op(s) applied, 27451 tok, 1172s)"
+        },
+        {
+          "at": "2026-10-21T21:12:33Z",
+          "chunk": "p444-t899-test-check-workspace",
+          "evidence": "attempt 2 …"
+        },
+        {
+          "at": "2026-10-21T21:37:35Z",
+          "chunk": "p647-t1178-modellease",
+          "evidence": "baselining the sandbox …[2026-10-21T21:37:34Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-21T21:50:57Z",
+          "chunk": "p748-t1441-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p748-t1441-coder--production--swift--1792619321.log: showing the first 3000 of 12736 characters; 9736 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:02:40Z",
+          "chunk": "p675-t1260-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p675-t1260-coder--production--swift--1792619965.log: showing the first 3000 of 12732 characters; 9732 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:09:32Z",
+          "chunk": "p659-t1233-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p659-t1233-coder--production--swift--1792620415.log: showing the first 3000 of 12730 characters; 9730 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:19:24Z",
+          "chunk": "p614-t1163-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p614-t1163-coder--production--swift--1792620927.log: showing the first 3000 of 12736 characters; 9736 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:27:31Z",
+          "chunk": "p611-t1118-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p611-t1118-coder--production--swift--1792621496.log: showing the first 3000 of 12732 characters; 9732 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:34:56Z",
+          "chunk": "p530-t1121-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p530-t1121-coder--production--swift--1792621960.log: showing the first 3000 of 12757 characters; 9757 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:44:23Z",
+          "chunk": "p597-t979-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p597-t979-coder--production--swift--1792622442.log: showing the first 3000 of 12767 characters; 9767 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T22:53:01Z",
+          "chunk": "p586-t980-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p586-t980-coder--production--swift--1792623041.log: showing the first 3000 of 12770 characters; 9770 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:00:54Z",
+          "chunk": "p585-t989-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p585-t989-coder--production--swift--1792623521.log: showing the first 3000 of 12712 characters; 9712 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:17:06Z",
+          "chunk": "p587-t991-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p587-t991-coder--production--swift--1792624482.log: showing the first 3000 of 12765 characters; 9765 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:24:53Z",
+          "chunk": "p599-t1000-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p599-t1000-coder--production--swift--1792624961.log: showing the first 3000 of 12764 characters; 9764 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:32:56Z",
+          "chunk": "p545-t1109-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p545-t1109-coder--production--swift--1792625441.log: showing the first 3000 of 12740 characters; 9740 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:40:58Z",
+          "chunk": "p558-t1130-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p558-t1130-coder--production--swift--1792625920.log: showing the first 3000 of 12719 characters; 9719 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:48:57Z",
+          "chunk": "p853-t1547-scope-lint",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p853-t1547-scope-lint--production--swift--1792626399.log: showing the first 3000 of 12721 characters; 9721 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-21T23:56:56Z",
+          "chunk": "p838-t1542-supervise",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p838-t1542-supervise--production--swift--1792626881.log: showing the first 3000 of 12720 characters; 9720 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-22T00:05:06Z",
+          "chunk": "p775-t1509-test-lane-idle",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p775-t1509-test-lane-idle--production--swift--1792627360.log: showing the first 3000 of 12715 characters; 9715 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-22T00:11:52Z",
+          "chunk": "p772-t1502-test-skill-change",
+          "evidence": "baselining the sandbox …[2026-10-22T00:11:51Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-22T00:18:30Z",
+          "chunk": "p773-t1500-test-senior-station",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p773-t1500-test-senior-station--production--swift--1792628165.log: showing the first 3000 of 12759 characters; 9759 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-22T00:31:05Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p562-t798-guard-task-writes--production--swift--1792628851.log: showing the first 3000 of 12865 characters; 9865 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-22T00:41:12Z",
+          "chunk": "p757-t1466-handover",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p757-t1466-handover--production--swift--1792629433.log: showing the first 3000 of 12990 characters; 9990 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-22T00:49:47Z",
+          "chunk": "p753-t1455-test-notify",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p753-t1455-test-notify--production--swift--1792630035.log: showing the first 3000 of 12716 characters; 9716 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-22T01:02:24Z",
+          "chunk": "p558-t1130-coder",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 4004 tok, 81s)"
+        },
+        {
+          "at": "2026-10-22T01:26:24Z",
+          "chunk": "p545-t1109-coder",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 848 tok, 15s)"
+        },
+        {
+          "at": "2026-10-22T01:40:52Z",
+          "chunk": "p599-t1000-coder",
+          "evidence": "attempt 4 … ACCEPTED (2 op(s) applied, 5860 tok, 105s)"
+        },
+        {
+          "at": "2026-10-22T02:13:32Z",
+          "chunk": "p585-t989-coder",
+          "evidence": "attempt 2 … ACCEPTED (5 op(s) applied, 9662 tok, 197s)"
+        },
+        {
+          "at": "2026-10-22T02:31:35Z",
+          "chunk": "p586-t980-coder",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 4483 tok, 79s)"
+        },
+        {
+          "at": "2026-10-22T02:45:42Z",
+          "chunk": "p597-t979-coder",
+          "evidence": "attempt 2 … ACCEPTED (1 op(s) applied, 787 tok, 15s)"
+        },
+        {
+          "at": "2026-10-22T03:19:40Z",
+          "chunk": "p611-t1118-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p611-t1118-coder--production--swift--1792639002.log: showing the first 3000 of 12851 characters; 9851 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T19:36:06Z",
+          "chunk": "p611-t1118-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p611-t1118-coder--production--swift--1792784023.log: showing the first 3000 of 12718 characters; 9718 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T19:51:58Z",
+          "chunk": "p611-t1118-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p611-t1118-coder--production--swift--1792784860.log: showing the first 3000 of 12718 characters; 9718 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T19:57:07Z",
+          "chunk": "p614-t1163-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p614-t1163-coder--production--swift-junior_latest--1792785260.log: showing the first 3000 of 12787 characters; 9787 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T20:03:16Z",
+          "chunk": "p659-t1233-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p659-t1233-coder--production--swift--1792785547.log: showing the first 3000 of 12592 characters; 9592 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T20:08:46Z",
+          "chunk": "p675-t1260-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p675-t1260-coder--production--swift-junior_latest--1792785957.log: showing the first 3000 of 12896 characters; 9896 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T21:37:52Z",
+          "chunk": "p675-t1260-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p675-t1260-coder--production--swift--1792791262.log: showing the first 3000 of 12628 characters; 9628 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-23T22:03:30Z",
+          "chunk": "p659-t1233-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p659-t1233-coder--production--swift-junior_latest--1792792805.log: showing the first 3000 of 12909 characters; 9909 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T00:00:16Z",
+          "chunk": "p675-t1260-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p675-t1260-coder--production--swift-junior_latest--1792799718.log: showing the first 3000 of 12826 characters; 9826 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T01:26:49Z",
+          "chunk": "p748-t1441-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p748-t1441-coder--production--swift-junior_latest--1792804927.log: showing the first 3000 of 12830 characters; 9830 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T01:43:33Z",
+          "chunk": "p690-t1320-infer",
+          "evidence": "baselining the sandbox …[2026-10-24T01:43:32Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T02:01:09Z",
+          "chunk": "p680-t1268-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p680-t1268-coder--production--swift-junior_latest--1792807036.log: showing the first 3000 of 12854 characters; 9854 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T02:57:02Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--swift-junior_latest--1792810138.log: showing the first 3000 of 12867 characters; 9867 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T03:10:15Z",
+          "chunk": "p854-t1549-settings",
+          "evidence": "baselining the sandbox …[2026-10-24T03:10:14Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T03:28:39Z",
+          "chunk": "p753-t1455-test-notify",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p753-t1455-test-notify--production--swift-junior_latest--1792812039.log: showing the first 3000 of 12829 characters; 9829 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T03:43:28Z",
+          "chunk": "p757-t1466-handover",
+          "evidence": "baselining the sandbox …[2026-10-24T03:43:28Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T03:59:07Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--qwen3.8_27b-mtp-q4_K_M-56k--1792814007.log: showing the first 3000 of 12948 characters; 9948 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T06:43:13Z",
+          "chunk": "p753-t1455-test-notify",
+          "evidence": "baselining the sandbox …[2026-10-24T06:43:13Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T08:43:31Z",
+          "chunk": "p749-t1442-role-store",
+          "evidence": "attempt 2 …"
+        },
+        {
+          "at": "2026-10-24T09:03:07Z",
+          "chunk": "p702-t1349-session-review",
+          "evidence": "attempt 1 … ACCEPTED (3 op(s) applied, 2529 tok, 118s)"
+        },
+        {
+          "at": "2026-10-24T10:11:10Z",
+          "chunk": "p696-t1340-dispatch-loop",
+          "evidence": "attempt 3 …"
+        },
+        {
+          "at": "2026-10-24T10:37:29Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--swift-junior_latest--1792837879.log: showing the first 3000 of 13099 characters; 10099 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T10:55:07Z",
+          "chunk": "p680-t1268-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p680-t1268-coder--production--swift-junior_latest--1792838814.log: showing the first 3000 of 12993 characters; 9993 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T11:14:27Z",
+          "chunk": "p694-t1331-session-review",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 4749 tok, 115s)"
+        },
+        {
+          "at": "2026-10-24T11:46:25Z",
+          "chunk": "p688-t1316-check-declared-intent",
+          "evidence": "attempt 4 …"
+        },
+        {
+          "at": "2026-10-24T11:46:25Z",
+          "chunk": "p687-t1314-session-review",
+          "evidence": "baselining the sandbox …[2026-10-24T11:46:24Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T11:53:22Z",
+          "chunk": "p685-t1312-session-review",
+          "evidence": "baselining the sandbox …[2026-10-24T11:53:22Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T12:03:05Z",
+          "chunk": "p683-t1276-session-review",
+          "evidence": "baselining the sandbox …[2026-10-24T12:03:04Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T12:10:29Z",
+          "chunk": "p674-t1258-session-review",
+          "evidence": "baselining the sandbox …[2026-10-24T12:10:28Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T12:38:54Z",
+          "chunk": "p679-t1267-runledger",
+          "evidence": "baselining the sandbox …[2026-10-24T12:38:52Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T12:39:00Z",
+          "chunk": "p671-t1254-nas-backup",
+          "evidence": "attempt 4 …"
+        },
+        {
+          "at": "2026-10-24T12:53:38Z",
+          "chunk": "p677-t1266-session-review",
+          "evidence": "baselining the sandbox …[2026-10-24T12:53:37Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T13:08:56Z",
+          "chunk": "p663-t1242-probe",
+          "evidence": "baselining the sandbox …[2026-10-24T13:08:55Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T13:08:56Z",
+          "chunk": "p673-t1257-run-tests",
+          "evidence": "attempt 3 …"
+        },
+        {
+          "at": "2026-10-24T13:18:48Z",
+          "chunk": "p665-t1247-run-tests",
+          "evidence": "baselining the sandbox …[2026-10-24T13:18:47Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T13:42:31Z",
+          "chunk": "p656-t1224-role-store",
+          "evidence": "baselining the sandbox …[2026-10-24T13:42:30Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T14:08:35Z",
+          "chunk": "p619-t1214-session-review",
+          "evidence": "baselining the sandbox …[2026-10-24T14:08:34Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T14:36:05Z",
+          "chunk": "p589-t801-failure-schema",
+          "evidence": "baselining the sandbox …[2026-10-24T14:36:05Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T14:36:06Z",
+          "chunk": "p638-t1139-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p638-t1139-session-review--production--swift--1792851864.log: showing the first 3000 of 12526 characters; 9526 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T15:06:08Z",
+          "chunk": "p549-t1064-session-review",
+          "evidence": "attempt 3 …"
+        },
+        {
+          "at": "2026-10-24T15:11:03Z",
+          "chunk": "p610-t1107-preflight-brief",
+          "evidence": "baselining the sandbox …[2026-10-24T15:11:02Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T15:19:35Z",
+          "chunk": "p563-t800-flow-coverage",
+          "evidence": "baselining the sandbox …[2026-10-24T15:19:34Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T15:30:43Z",
+          "chunk": "p564-t800-check-workspace",
+          "evidence": "baselining the sandbox …[2026-10-24T15:30:43Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T15:41:42Z",
+          "chunk": "p604-t1061-process-registry",
+          "evidence": "baselining the sandbox …[2026-10-24T15:41:41Z] BUILD WALL CLOCK: stopped after 3600 s (dispatch_loop.BUILD_WALL_S)"
+        },
+        {
+          "at": "2026-10-24T16:15:07Z",
+          "chunk": "p608-t1059-session-review",
+          "evidence": "attempt 1 … ACCEPTED (1 op(s) applied, 12036 tok, 438s)"
+        },
+        {
+          "at": "2026-10-24T16:40:42Z",
+          "chunk": "p680-t1268-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p680-t1268-coder--production--swift-junior_latest--1792859526.log: showing the first 3000 of 12993 characters; 9993 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T16:51:35Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--swift-junior_latest--1792860161.log: showing the first 3000 of 12999 characters; 9999 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T17:15:46Z",
+          "chunk": "p741-t1426-supervise",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p741-t1426-supervise--production--swift-junior_latest--1792861620.log: showing the first 3000 of 13122 characters; 10122 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T17:23:29Z",
+          "chunk": "p608-t1059-session-review",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p608-t1059-session-review--production--swift-junior_latest--1792862116.log: showing the first 3000 of 12971 characters; 9971 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T17:30:18Z",
+          "chunk": "p604-t1061-process-registry",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p604-t1061-process-registry--production--swift-junior_latest--1792862537.log: showing the first 3000 of 13024 characters; 10024 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T17:36:07Z",
+          "chunk": "p563-t800-flow-coverage",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p563-t800-flow-coverage--production--swift-junior_latest--1792863094.log: showing the first 3000 of 12939 characters; 9939 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T17:54:29Z",
+          "chunk": "p564-t800-check-workspace",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p564-t800-check-workspace--production--swift-junior_latest--1792863967.log: showing the first 3000 of 13078 characters; 10078 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T18:11:39Z",
+          "chunk": "p741-t1426-supervise",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p741-t1426-supervise--production--swift-junior_latest--1792864992.log: showing the first 3000 of 13051 characters; 10051 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T18:36:32Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--swift-junior_latest--1792866660.log: showing the first 3000 of 13051 characters; 10051 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T18:58:35Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--swift-junior_latest--1792868138.log: showing the first 3000 of 13175 characters; 10175 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        },
+        {
+          "at": "2026-10-24T19:36:57Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "[TRUNCATED -- the end of workspace/run-logs/dispatch/p542-t1110-coder--production--swift-junior_latest--1792870273.log: showing the first 3000 of 13142 characters; 10142 characters are NOT shown. Treat everything after this point as unseen, and say so rather than assuming what it contains.]"
+        }
+      ],
+      "reason": "classified mechanically from the build log (unclassified)",
+      "evidence": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/coder-1790895050-3513293'",
+      "added_by": "failure_schema.py"
+    },
+    {
+      "class": "oracle-weak",
+      "cause_category": "content",
+      "instances": [
+        {
+          "at": "2026-09-30T21:21:03Z",
+          "chunk": "t471",
+          "evidence": "merge review: the oracle only checked chat()'s return shape, not that a caller reads it"
+        },
+        {
+          "at": "2026-09-30T21:22:48Z",
+          "chunk": "t297",
+          "evidence": "merge review: oracle used identical x-strings; did not cover real constant fields"
+        },
+        {
+          "at": "2026-09-30T21:23:27Z",
+          "chunk": "t370",
+          "evidence": "merge review: the oracle checked the call shape, not the request body's semantics"
+        }
+      ],
+      "reason": "oracle asserts shape (call made / return shape or arity / a call was invoked) instead of behaviour (value consumed downstream; two or more distinct real constants; the required fields and values of the request body)",
+      "evidence": "workspace/scope-quality.jsonl, stage=merge, 2026-09-30T21:21-21:23Z: the three merge-review defect lines above; all three caught at merge review and sent back, none reached main",
+      "defense": "scope_lint oracle-weak structural check (proven by scripts/tests/test_scope_lint_weak.py; build p239) + Manager-prompt authoring rule",
+      "added_by": "claude-code (t502; p238's data half, done directly 2026-10-02 -- a JSON append cannot turn the scope_lint oracle green, so preflight rightly refused it as a build)"
+    },
+    {
+      "class": "tests-failed",
+      "cause_category": "content",
+      "instances": [
+        {
+          "at": "2026-10-03T04:10:53Z",
+          "chunk": "p253-t209-lane-status",
+          "evidence": "attempt 4 … tests fail (2: test_system_snapshot.py, test_mcp_live_status.py, 607s)"
+        },
+        {
+          "at": "2026-10-03T14:32:15Z",
+          "chunk": "p255-t218-team-kpi",
+          "evidence": "attempt 4 … tests fail (1: test_team_kpi.py, 462s)"
+        },
+        {
+          "at": "2026-10-03T15:37:05Z",
+          "chunk": "p256-t130-app-timeline",
+          "evidence": "attempt 4 … tests fail (1: test_slot_events.py, 898s)"
+        },
+        {
+          "at": "2026-10-08T03:03:21Z",
+          "chunk": "p288-t712-scope-lint",
+          "evidence": "attempt 6 … tests fail (1: test_scope_lint_evidence.py, 432s)"
+        },
+        {
+          "at": "2026-10-08T07:41:21Z",
+          "chunk": "p287-t296-check-workspace",
+          "evidence": "attempt 3 … tests fail (1: test_check_workspace.py, 275s)"
+        },
+        {
+          "at": "2026-10-08T14:49:23Z",
+          "chunk": "p313-t941-scope-lint",
+          "evidence": "attempt 7 … tests fail (9: test_scope_lint_window.py, test_scope_lint.py, test_scope_lint_anchor.py, test_scope_lint_anchors.py, test_scope_lint_oracle_weak_shape.py, test_scope_lint_shape_escape.py, test_scope_lint_static_parse.py, test_scope_lint_symbols_bare.py, test_scope_lint_weak.py, 1400s)"
+        },
+        {
+          "at": "2026-10-08T21:11:04Z",
+          "chunk": "p314-t800-flow-coverage",
+          "evidence": "attempt 3 … tests fail (1: test_hook_flow_link.py, 490s)"
+        },
+        {
+          "at": "2026-10-08T21:29:14Z",
+          "chunk": "p287-t296-check-workspace",
+          "evidence": "attempt 3 … tests fail (1: test_check_workspace.py, 94s)"
+        },
+        {
+          "at": "2026-10-08T21:48:10Z",
+          "chunk": "p311-t801-failure-schema",
+          "evidence": "attempt 2 … ACCEPTED (1 op(s) applied, 9402 tok, 564s)"
+        },
+        {
+          "at": "2026-10-08T21:53:56Z",
+          "chunk": "p288-t712-scope-lint",
+          "evidence": "attempt 5 … tests fail (1: t"
+        },
+        {
+          "at": "2026-10-08T21:58:03Z",
+          "chunk": "p285-t645-probe",
+          "evidence": "attempt 5 … tests fail (1: test"
+        },
+        {
+          "at": "2026-10-09T17:35:28Z",
+          "chunk": "p339-t760-flow-change",
+          "evidence": "attempt 3 … tests fail (1: test_flow_change.py, 195s)"
+        },
+        {
+          "at": "2026-10-09T19:09:22Z",
+          "chunk": "p279-t707-session-review",
+          "evidence": "attempt 3 … tests fail (2: test_session_review_anchor_refusal.py, test_session_review.py, 82s)"
+        },
+        {
+          "at": "2026-10-10T03:13:54Z",
+          "chunk": "p296-t690-backup-corpora",
+          "evidence": "attempt 4 … ACCEPTED (5 op(s) applied, 14674 tok, 620s)"
+        },
+        {
+          "at": "2026-10-10T03:43:57Z",
+          "chunk": "p339-t760-flow-change",
+          "evidence": "attempt 3 … tests fail (1: test_flow_change.py, 224s)"
+        },
+        {
+          "at": "2026-10-10T04:20:13Z",
+          "chunk": "p338-t761-role-store",
+          "evidence": "attempt 6 … asked for 4 file(s), gave 2 new (3113 tok, 269s)"
+        },
+        {
+          "at": "2026-10-10T05:34:47Z",
+          "chunk": "p327-t778-session-review",
+          "evidence": "attempt 4 … tests fail (1: test_finding_anchors.py, 230s)"
+        },
+        {
+          "at": "2026-10-10T06:14:26Z",
+          "chunk": "p325-t781-askmemory",
+          "evidence": "attempt 4 … tests fail (1: test_askmemory_proposal_lands_in_repo.py, 894s)"
+        },
+        {
+          "at": "2026-10-10T06:43:01Z",
+          "chunk": "p285-t645-probe",
+          "evidence": "attempt 3 … tests fail (1: test_probe_deliver"
+        },
+        {
+          "at": "2026-10-10T07:08:37Z",
+          "chunk": "p311-t801-failure-schema",
+          "evidence": "attempt 3 … tests fail (1: test_failure_schema_status_currency.py, 113s)"
+        },
+        {
+          "at": "2026-10-10T07:22:14Z",
+          "chunk": "p314-t800-flow-coverage",
+          "evidence": "attempt 5 … ERROR"
+        },
+        {
+          "at": "2026-10-10T14:26:04Z",
+          "chunk": "p342-t757-infer",
+          "evidence": "attempt 4 … asked for 4 file(s), gave 4 new (14"
+        },
+        {
+          "at": "2026-10-10T15:15:17Z",
+          "chunk": "p364-t1012-log-baseline",
+          "evidence": "attempt 2 … tests fail (1: test_toolchain_version_state.py, 530s)"
+        },
+        {
+          "at": "2026-10-10T16:35:02Z",
+          "chunk": "p363-t979-coder",
+          "evidence": "attempt 1 … asked for 1 file(s"
+        },
+        {
+          "at": "2026-10-10T17:04:49Z",
+          "chunk": "p367-t1015-scope-lint",
+          "evidence": "attempt 4 … tests fail (1: test_scope_lint.py, 232s)"
+        },
+        {
+          "at": "2026-10-10T17:33:26Z",
+          "chunk": "p368-t991-coder",
+          "evidence": "attempt 5 … tests fail (1: test_coder_slice_room.py, 127s)"
+        },
+        {
+          "at": "2026-10-10T23:48:18Z",
+          "chunk": "p381-t1022-library-checks",
+          "evidence": "attempt 7 … tests fail (1: test_library_checks.py, 140s)"
+        },
+        {
+          "at": "2026-10-11T00:40:08Z",
+          "chunk": "p382-t752-scope-lint",
+          "evidence": "attempt 7 … refused (lines 32-33 cut a multi-line string that runs from line 2 to line 42 in scripts/scope_lint.py. A line-range edit replaces whole lines, so the range must cover the whole string (lines 2-42) or not cross it., 14004 tok, 467s)"
+        },
+        {
+          "at": "2026-10-13T14:17:29Z",
+          "chunk": "p397-t1038-session-review",
+          "evidence": "attempt 5 … tests fail (1: test_deferral_artefacts.py, 176s)"
+        },
+        {
+          "at": "2026-10-13T14:45:25Z",
+          "chunk": "p388-t1029-check-gate-closures",
+          "evidence": "attempt 5 … tests fail (1: test_gate_marker_generated.py, 246s)"
+        },
+        {
+          "at": "2026-10-13T15:08:25Z",
+          "chunk": "p391-t1033-scope-lint",
+          "evidence": "attempt 3 … tests fail (1: test_chunks_predicate_single_source.py, 113s)"
+        },
+        {
+          "at": "2026-10-13T15:49:38Z",
+          "chunk": "p404-t1041-session-review",
+          "evidence": "attempt 4 … tests fail (1: test_audit_deferrals.py, 494s)"
+        },
+        {
+          "at": "2026-10-13T16:24:35Z",
+          "chunk": "p445-t1046-session-review",
+          "evidence": "attempt 4 … tests fail (1: test_slot_concurrency.py, 182s)"
+        },
+        {
+          "at": "2026-10-13T16:45:26Z",
+          "chunk": "p455-t1052-session-review",
+          "evidence": "attempt 5 … tests fail (1: test_session_review_scripted.py, 246s)"
+        },
+        {
+          "at": "2026-10-13T17:10:55Z",
+          "chunk": "p457-t1057-session-candidates",
+          "evidence": "attempt 5 … tests fail (2: test_finding_7780bb2535a7_discharge.py, test_slot_concurrency.py, 340s)"
+        },
+        {
+          "at": "2026-10-13T17:27:09Z",
+          "chunk": "p459-t1058-flow",
+          "evidence": "attempt 4 … tests fail (1: test_slot_concurrency.py, 216s)"
+        },
+        {
+          "at": "2026-10-13T17:51:07Z",
+          "chunk": "p499-t1102-sweep",
+          "evidence": "attempt 3 … tests fail (1: test_slot_concurrency.py, 585s)"
+        },
+        {
+          "at": "2026-10-13T18:08:01Z",
+          "chunk": "p498-t1101-who-works",
+          "evidence": "attempt 7 … refused (lines 16-19 cut a multi-line string that runs from line 1 to line 20 in scripts/who_works.py. A line-range edit replaces whole lines, so the range must cover the whole string (lines 1-20) or not cross it., 8232 tok, 329s)"
+        },
+        {
+          "at": "2026-10-13T18:49:09Z",
+          "chunk": "p461-t1060-pre-commit",
+          "evidence": "attempt 4 … ACCEPTED (1 op(s) applied, 6734 tok, 173s)"
+        },
+        {
+          "at": "2026-10-13T19:40:17Z",
+          "chunk": "p464-t1062-coder",
+          "evidence": "attempt 6 … tests fail (3: test_coder_indent_profile.py, test_coder_guards.py, test_session_review_scripted.py, 465s)"
+        },
+        {
+          "at": "2026-10-13T20:11:07Z",
+          "chunk": "p502-t1115-hub-common",
+          "evidence": "attempt 3 … tests fail (1: test_hub_common_moves.py, 302s)"
+        },
+        {
+          "at": "2026-10-13T20:20:13Z",
+          "chunk": "p466-t1065-role-store",
+          "evidence": "attempt 4 … ERROR NoServer: 'swift' is offered by vllm-swift, and none answers"
+        },
+        {
+          "at": "2026-10-15T22:42:11Z",
+          "chunk": "p633-t1209-scope-lint",
+          "evidence": "attempt 3 … tests fail (1: test_slot_concurrency.py, 99s)"
+        },
+        {
+          "at": "2026-10-15T23:03:47Z",
+          "chunk": "p578-t1206-flow-coverage",
+          "evidence": "attempt 3 … tests fail (1: test_slot_concurrency.py, 96s)"
+        },
+        {
+          "at": "2026-10-16T00:06:42Z",
+          "chunk": "p577-t735-session-review",
+          "evidence": "attempt 3 … tests fail (2: test_session_review_live_state.py, test_session_review_verification_claims.py, 140s)"
+        },
+        {
+          "at": "2026-10-16T00:30:40Z",
+          "chunk": "p537-t741-digests",
+          "evidence": "attempt 5 … tests fail (1: test_digests_ledger.py, 86s)"
+        },
+        {
+          "at": "2026-10-16T05:12:48Z",
+          "chunk": "p521-t1167-coder-harness",
+          "evidence": "attempt 3 … tests fail (1: test_coder_harness_readiness.py, 93s)"
+        },
+        {
+          "at": "2026-10-16T05:37:47Z",
+          "chunk": "p535-t1137-coder",
+          "evidence": "attempt 5 … tests fail (1: test_coder_sandbox_survives_vanishing_file.py, 289s)"
+        },
+        {
+          "at": "2026-10-16T05:51:55Z",
+          "chunk": "p558-t1130-coder",
+          "evidence": "attempt 3 … ACCEPTED (1 op(s) applied, 1109 tok, 92s)"
+        },
+        {
+          "at": "2026-10-16T06:18:29Z",
+          "chunk": "p536-t1161-session-candidates",
+          "evidence": "attempt 3 … tests fail (1: test_t1161_dropped_recall.py, 49s)"
+        },
+        {
+          "at": "2026-10-16T07:53:25Z",
+          "chunk": "p541-t1113-coder",
+          "evidence": "attempt 6 … tests fail (1: test_coder_guards.py, 247s)"
+        },
+        {
+          "at": "2026-10-16T08:28:44Z",
+          "chunk": "p542-t1110-coder",
+          "evidence": "attempt 3 … tests fail (1: test_coder_commit_timeout.py, 224s)"
+        },
+        {
+          "at": "2026-10-16T09:33:28Z",
+          "chunk": "p550-t1115-hub-common",
+          "evidence": "attempt 5 … tests fail (1: test_hub_moves3_hub_common.py, 141s)"
+        },
+        {
+          "at": "2026-10-16T09:57:24Z",
+          "chunk": "p551-t1115-feedback",
+          "evidence": "attempt 5 … tests fail (10: test_corpus_models_live.py, test_dispatch_tick_latest.py, test_flow_pages.py, test_hold_menu.py, test_hub_layout.py, test_md_code_blocks.py, test_slot_concurrency.py, test_status_system_card.py, test_terminal_last_output.py, test_uploads.py, 198s)"
+        },
+        {
+          "at": "2026-10-16T10:25:47Z",
+          "chunk": "p547-t1114-roles-pages",
+          "evidence": "attempt 5 … tests fail (2: test_device_on_role_pages.py, test_slot_concurrency.py, 466s)"
+        },
+        {
+          "at": "2026-10-16T11:20:54Z",
+          "chunk": "p553-t1087-session-review",
+          "evidence": "attempt 5 … tests fail (1: test_t1087_deferral_row.py, 536s)"
+        },
+        {
+          "at": "2026-10-16T13:06:19Z",
+          "chunk": "p566-t1072-scope-lint",
+          "evidence": "attempt 6 … tests fail (1: test_scope_lint.py, 276s)"
+        },
+        {
+          "at": "2026-10-16T15:06:39Z",
+          "chunk": "p570-t1083-session-review",
+          "evidence": "attempt 4 … ERROR NoServer: 'swift' is offered by vllm-swift, and none answers"
+        },
+        {
+          "at": "2026-10-16T17:16:19Z",
+          "chunk": "p538-t1029-check-gate-closures",
+          "evidence": "attempt 6 … tests fail (2: test_gate_marker_generated.py, test_slot_concurrency.py, 218s)"
+        },
+        {
+          "at": "2026-10-16T17:39:08Z",
+          "chunk": "p581-t752-scope-lint",
+          "evidence": "attempt 3 … tests fail (1: test_scope_lint_computed_expectation.py, 487s)"
+        },
+        {
+          "at": "2026-10-16T17:52:59Z",
+          "chunk": "p598-t1022-library-checks",
+          "evidence": "attempt 3 … tests fail (1: test_slot_concurrency.py, 28s)"
+        },
+        {
+          "at": "2026-10-16T18:49:12Z",
+          "chunk": "p587-t991-coder",
+          "evidence": "attempt 6 … ACCEPTED (2 op(s) applied, 6141 tok, 125s)"
+        },
+        {
+          "at": "2026-10-16T20:10:30Z",
+          "chunk": "p588-t853-coder",
+          "evidence": "attempt 5 … ACCEPTED (3 op(s) applied, 4391 tok, 171s)"
+        },
+        {
+          "at": "2026-10-16T21:33:41Z",
+          "chunk": "p563-t800-flow-coverage",
+          "evidence": "attempt 5 … tests fail (1: test_hook_flow_link.py, 496s)"
+        },
+        {
+          "at": "2026-10-16T23:55:07Z",
+          "chunk": "p593-t645-probe",
+          "evidence": "attempt 2 … tests fail (1: test_probe_deliverable.py, 200s)"
+        },
+        {
+          "at": "2026-10-17T00:22:26Z",
+          "chunk": "p678-t1309-dispatch-loop",
+          "evidence": "attempt 4 … ERROR NoServer: 'swift' is offered by vllm-swift, and none answers"
+        },
+        {
+          "at": "2026-10-17T01:06:23Z",
+          "chunk": "p594-t778-session-review",
+          "evidence": "attempt 7 … ACCEPTED (6 op(s) applied, 11823 tok, 440s)"
+        },
+        {
+          "at": "2026-10-17T01:26:38Z",
+          "chunk": "p595-t781-askmemory",
+          "evidence": "attempt 6 … ERROR NoServer: 'swift' is offered by vllm-swift, and none answers"
+        },
+        {
+          "at": "2026-10-17T02:34:26Z",
+          "chunk": "p600-t658-failure-schema",
+          "evidence": "attempt 3 … ACCEPTED (1 op(s) applied, 4492 tok, 83s)"
+        },
+        {
+          "at": "2026-10-17T09:06:09Z",
+          "chunk": "p606-t1030-handover",
+          "evidence": "attempt 3 … tests fail (1: test_fast_path.py, 116s)"
+        },
+        {
+          "at": "2026-10-17T09:54:21Z",
+          "chunk": "p608-t1059-session-review",
+          "evidence": "attempt 4 … tests fail (1: test_fast_path.py, 150s)"
+        },
+        {
+          "at": "2026-10-17T12:11:55Z",
+          "chunk": "p604-t1061-process-registry",
+          "evidence": "attempt 6 … tests fail (2: test_process_registry.py, test_t772_census_scope_and_exact_coverage.py, 1496s)"
+        },
+        {
+          "at": "2026-10-17T14:23:11Z",
+          "chunk": "p589-t801-failure-schema",
+          "evidence": "attempt 2 … tests fail (1: test_failure_schema_status_currency.py, 139s)"
+        },
+        {
+          "at": "2026-10-17T14:26:25Z",
+          "chunk": "p609-t1074-session-review",
+          "evidence": "attempt 3 … tests fail (3: test_finding_dedupe.py, test_session_review.py, test_session_review_scripted.py, 224s)"
+        },
+        {
+          "at": "2026-10-17T15:03:09Z",
+          "chunk": "p564-t800-check-workspace",
+          "evidence": "attempt 4 … tests fail (6: test_check_workspace.py, test_check_workspace_deferral_numbers.py, test_fast_path.py, test_runtime_drift.py, test_served_prose.py, test_task_queue.py, 395s)"
+        },
+        {
+          "at": "2026-10-17T15:03:56Z",
+          "chunk": "p610-t1107-preflight-brief",
+          "evidence": "attempt 7 … tests fail (1: test_slot_concurrency.py, 194s)"
+        },
+        {
+          "at": "2026-10-17T15:22:17Z",
+          "chunk": "p549-t1064-session-review",
+          "evidence": "attempt 4 … tests fail (1: test_fast_path.py, 160s)"
+        },
+        {
+          "at": "2026-10-17T16:40:44Z",
+          "chunk": "p589-t801-failure-schema",
+          "evidence": "attempt 2 … tests fail (1: test_failure_schema_status_currency.py, 28s)"
+        },
+        {
+          "at": "2026-10-17T18:00:48Z",
+          "chunk": "p615-t1169-dispatch-loop",
+          "evidence": "attempt 5 … tests fail (1: test_fast_path.py, 185s)"
+        },
+        {
+          "at": "2026-10-17T18:13:19Z",
+          "chunk": "p613-t1159-preflight-brief",
+          "evidence": "attempt 7 … tests fail (1: test_fast_path.py, 163s)"
+        },
+        {
+          "at": "2026-10-17T21:40:46Z",
+          "chunk": "p661-t1239-session-review",
+          "evidence": "attempt 4 … tests fail (1: test_verify_cover_semantic.py, 136s)"
+        },
+        {
+          "at": "2026-10-18T00:41:58Z",
+          "chunk": "p665-t1247-run-tests",
+          "evidence": "attempt 5 … tests fail (2: test_no_live_queue_mutation.py, test_session_review_scripted.py, 288s)"
+        },
+        {
+          "at": "2026-10-18T02:40:08Z",
+          "chunk": "p671-t1254-nas-backup",
+          "evidence": "attempt 4 … tests fail (1: test_fast_path.py, 128s)"
+        },
+        {
+          "at": "2026-10-18T03:13:05Z",
+          "chunk": "p673-t1257-run-tests",
+          "evidence": "attempt 6 … tests fail (1: test_fast_path.py, 253s)"
+        },
+        {
+          "at": "2026-10-18T05:14:23Z",
+          "chunk": "p677-t1266-session-review",
+          "evidence": "attempt 4 … tests fail (2: test_deferral_contract.py, test_fast_path.py, 95s)"
+        },
+        {
+          "at": "2026-10-18T07:17:18Z",
+          "chunk": "p680-t1268-coder",
+          "evidence": "attempt 5 … tests fail (1: test_coder_fill_paths.py, 140s)"
+        },
+        {
+          "at": "2026-10-18T10:37:16Z",
+          "chunk": "p683-t1276-session-review",
+          "evidence": "attempt 6 … tests fail (1: test_session_review_deferral_execution_status.py, 257s)"
+        },
+        {
+          "at": "2026-10-18T20:41:08Z",
+          "chunk": "p741-t1426-supervise",
+          "evidence": "attempt 5 … tests fail (1: test_supervise_brief_placeholder.py, 119s)"
+        },
+        {
+          "at": "2026-10-18T21:08:30Z",
+          "chunk": "p742-t1428-session-review",
+          "evidence": "attempt 5 … tests fail (1: test_session_review_recommendation_disposition.py, 187s)"
+        },
+        {
+          "at": "2026-10-21T07:48:50Z",
+          "chunk": "p744-t1432-coder",
+          "evidence": "attempt 5 … tests fail (2: test_coder_first_budget.py, test_coder_slice_room.py, 861s)"
+        },
+        {
+          "at": "2026-10-21T13:02:46Z",
+          "chunk": "p740-t1425-coder",
+          "evidence": "attempt 6 … tests fail (1: test_coder_guards.py, 108s)"
+        },
+        {
+          "at": "2026-10-21T13:47:37Z",
+          "chunk": "p668-t1250-coder",
+          "evidence": "attempt 5 … tests fail (1: test_coder_line_range_path_after_size_refusal.py, 177s)"
+        },
+        {
+          "at": "2026-10-21T16:06:42Z",
+          "chunk": "p535-t1137-coder",
+          "evidence": "attempt 4 … tests fail (1: test_coder_sandbox_survives_vanishing_file.py, 219s)"
+        },
+        {
+          "at": "2026-10-22T01:58:09Z",
+          "chunk": "p587-t991-coder",
+          "evidence": "attempt 5 … tests fail (1: test_coder_slice_room.py, 105s)"
+        },
+        {
+          "at": "2026-10-22T03:02:59Z",
+          "chunk": "p530-t1121-coder",
+          "evidence": "attempt 6 … tests fail (1: test_coder_sandbox_transient_copy.py, 72s)"
+        },
+        {
+          "at": "2026-10-24T10:11:10Z",
+          "chunk": "p742-t1428-session-review",
+          "evidence": "attempt 4 …"
+        },
+        {
+          "at": "2026-10-24T17:32:03Z",
+          "chunk": "p647-t1178-modellease",
+          "evidence": "attempt 5 … tests fail (1: test_modellease.py, 612s)"
+        }
+      ],
+      "reason": "classified mechanically from the build log (tests-failed)",
+      "evidence": "attempt 4 … tests fail (2: test_system_snapshot.py, test_mcp_live_status.py, 607s)",
+      "added_by": "failure_schema.py"
+    },
+    {
+      "class": "status-document-currency-drift",
+      "cause_category": "content",
+      "instances": [
+        {
+          "at": "2026-10-07",
+          "chunk": "session-rca 5a25bc4835f5 (STATE.md header)",
+          "evidence": "STATE.md carried a Last-updated date of 2026-09-30 while its body had been extended on 2026-10-06 (2b89eb1d, 0db1d34d); the header moved only on 2026-10-07 in 299f9761."
+        }
+      ],
+      "reason": "A standing document's own 'Last updated' claim drifted from the artefact it describes, and the schema had no cause class for that observation, so the 2026-10-07 finding could only be said in prose and died there. Same mechanism as harness-edit-application: a taxonomy with a missing row does not produce a gap, it produces a misfiling.",
+      "evidence": "workspace/rca/5a25bc4835f5.md, Cause A: 'STATE.md still says 2026-09-30' was seen by a model reading the file at session start on 2026-10-07. Nothing that runs has ever compared a standing doc's header to that file's commit history. Commits 2b89eb1d and 0db1d34d (2026-10-06) changed STATE.md's body; the header moved on 2026-10-07 in 299f9761.",
+      "defense": "SCOPE: a brief that changes a standing document names its Last-updated line as a site. MECHANICAL (next scope, t799 item 2): scripts/check_workspace.py fails while a standing doc's '**Last updated:**' date trails the newest commit touching that file, same-day tolerance. A finding of this class is filed with artifact, claimed_as_of, newest_change_at and evidence(commit), so the drift is a record a future scope must address and not a sentence in an RCA.",
+      "required_fields": [
+        "artifact",
+        "claimed_as_of",
+        "newest_change_at",
+        "evidence"
+      ],
+      "added_by": "claude-code (t799)"
+    },
+    {
+      "class": "bad-shape-unbound-or-removed",
+      "cause_category": "harness-capability",
+      "instances": [
+        {
+          "at": "2026-10-14T03:07:16Z",
+          "chunk": "p485-t1087-session-review",
+          "evidence": "attempt 4 … code shape (3174 tok, 33s)"
+        },
+        {
+          "at": "2026-10-17T22:30:59Z",
+          "chunk": "p661-t1239-session-review",
+          "evidence": "attempt 5 … code shape (2393 tok, 90s)"
+        },
+        {
+          "at": "2026-10-24T07:22:49Z",
+          "chunk": "p562-t798-guard-task-writes",
+          "evidence": "attempt 3 … code shape (15112 tok, 446s)"
+        }
+      ],
+      "reason": "classified mechanically from the build log (bad-shape-unbound-or-removed)",
+      "evidence": "attempt 4 … code shape (3174 tok, 33s)",
+      "added_by": "failure_schema.py"
+    }
+  ]
+}
